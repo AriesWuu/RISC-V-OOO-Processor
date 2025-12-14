@@ -1,0 +1,40 @@
+Vivado Simulator v2025.1.0
+Copyright 1986-2022 Xilinx, Inc. All Rights Reserved.
+Copyright 2022-2025 Advanced Micro Devices, Inc. All Rights Reserved.
+Running: D:/Xilinx_2025.1/2025.1/Vivado/bin/unwrapped/win64.o/xelab.exe --incr --debug typical --relax --mt 2 -L xil_defaultlib -L uvm -L unisims_ver -L unimacro_ver -L secureip --snapshot top_tb_behav xil_defaultlib.top_tb xil_defaultlib.glbl -log elaborate.log 
+Using 2 slave threads.
+Starting static elaboration
+Pass Through NonSizing Optimizer
+Completed static elaboration
+Starting simulation data flow analysis
+Completed simulation data flow analysis
+Time Resolution for simulation is 1ps
+Compiling package xil_defaultlib.cpu_pkg
+Compiling module xil_defaultlib.pc_counter
+Compiling module xil_defaultlib.i_cache(MEMFILE="25instMem-test....
+Compiling module xil_defaultlib.fetch_module(MEMFILE="25instMem-...
+Compiling module xil_defaultlib.branch_predictor_default
+Compiling module xil_defaultlib.pipeline_skid_buffer_struct(T=lo...
+Compiling module xil_defaultlib.imm_gen
+Compiling module xil_defaultlib.control_unit
+Compiling module xil_defaultlib.alu_control
+Compiling module xil_defaultlib.decode_module
+Compiling module xil_defaultlib.pipeline_skid_buffer_struct(T=de...
+Compiling module xil_defaultlib.map_table
+Compiling module xil_defaultlib.free_list(PHYS_REGS=128)
+Compiling module xil_defaultlib.rob_tag_default
+Compiling module xil_defaultlib.rename_module(PHYS_REGS=128)
+Compiling module xil_defaultlib.pipeline_skid_buffer_struct(T=re...
+Compiling module xil_defaultlib.PRF
+Compiling module xil_defaultlib.RS_default
+Compiling module xil_defaultlib.RS(STRICT_AGE_ORDER=1'b1)
+Compiling module xil_defaultlib.ROB
+Compiling module xil_defaultlib.dispatch_module
+Compiling module xil_defaultlib.ALU_unit
+Compiling module xil_defaultlib.branch_unit
+Compiling module xil_defaultlib.LSU_unit
+Compiling module xil_defaultlib.data_memory(WORDS=131072)
+Compiling module xil_defaultlib.top(MEMFILE="25instMem-test.mem"...
+Compiling module xil_defaultlib.top_tb
+Compiling module xil_defaultlib.glbl
+Built simulation snapshot top_tb_behav

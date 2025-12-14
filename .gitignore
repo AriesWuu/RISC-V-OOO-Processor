@@ -1,0 +1,13 @@
+# build / outputs
+build/
+out/
+*.log
+*.vcd
+*.wlf
+*.jou
+*.str
+*.tmp
+
+# OS / IDE
+.DS_Store
+.vscode/
