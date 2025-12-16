@@ -299,12 +299,15 @@ module top #(
   logic        complete_br_valid;
   logic [ROB_BITS-1:0] complete_br_rob_tag;
 
+  // LSQ signals
+  logic [ROB_BITS-1:0] rob_head_dispatch, rob_tail_cp_dispatch;
+  logic [ROB_BITS-1:0] commit_rob_tag;
+  logic store_alloc_valid;
+  logic [ROB_BITS-1:0] store_alloc_rob_tag;
+  
   dispatch_module #(
-    .PHYS_REGS    (PHYS_REGS),
-    .ALU_RS_DEPTH (8),
-    .BR_RS_DEPTH  (8),
-    .LSU_RS_DEPTH (8),
-    .ROB_DEPTH    (ROB_ENTRIES)
+    .PHYS_REGS(PHYS_REGS),
+    .ROB_DEPTH(ROB_ENTRIES)
   ) u_dispatch (
     .clk              (clk),
     .reset            (reset),
@@ -363,7 +366,16 @@ module top #(
     // Commit outputs
     .commit_valid_o   (commit_valid),
     .commit_writes_rd_o(commit_writes_rd),
-    .commit_dst_old_o (commit_dst_old)
+    .commit_dst_old_o (commit_dst_old),
+    .commit_rob_tag_o (commit_rob_tag),
+    // ROB head/tail for LSQ
+    .rob_head_o       (rob_head_dispatch),
+    .rob_tail_cp_o    (rob_tail_cp_dispatch),
+    // Store allocation for LSQ
+    .store_alloc_valid_o   (store_alloc_valid),
+    .store_alloc_rob_tag_o (store_alloc_rob_tag),
+    // LSQ ready for store backpressure
+    .lsq_alloc_ready_i     (sq_alloc_ready)
   );
 
   // ============================================================
@@ -414,10 +426,33 @@ module top #(
   // Connect mispredict_rob_tag from branch unit's writeback
   assign mispredict_rob_tag = wb_br_rob_tag;
 
-  // ----- LSU Unit -----
-  logic [31:0] dmem_addr, dmem_wdata, dmem_rdata;
+  // ----- LSU Unit with LSQ -----
+  logic [31:0] dmem_addr, dmem_rdata;
   logic        dmem_re;
-  logic [3:0]  dmem_we;
+  
+  // LSQ Store signals
+  logic        lsq_store_valid;
+  logic [31:0] lsq_store_addr, lsq_store_data;
+  logic [3:0]  lsq_store_be;
+  logic [ROB_BITS-1:0] lsq_store_rob_tag;
+  
+  // LSQ Load forward signals
+  logic        lsq_load_fwd_req;
+  logic [ROB_BITS-1:0] lsq_load_fwd_rob_tag;
+  logic [31:0] lsq_load_fwd_addr;
+  logic        lsq_load_fwd_valid;
+  logic [31:0] lsq_load_fwd_data;
+  logic [3:0]  lsq_load_fwd_be;
+  
+  // LSQ allocation signals
+  logic        sq_alloc_ready;
+  logic [2:0]  sq_alloc_idx;
+  
+  // LSQ commit signals
+  logic        sq_commit_ready;
+  logic        mem_write_valid;
+  logic [31:0] mem_write_addr, mem_write_data;
+  logic [3:0]  mem_write_be;
 
   LSU_unit u_lsu (
     .clk          (clk),
@@ -432,24 +467,87 @@ module top #(
     .wb_data_o    (wb_lsu_data),
     .wb_dst_prf_o (wb_lsu_prf),
     .wb_rob_tag_o (wb_lsu_rob_tag),
+    // LSQ Store Write Interface
+    .lsq_store_valid_o    (lsq_store_valid),
+    .lsq_store_addr_o     (lsq_store_addr),
+    .lsq_store_data_o     (lsq_store_data),
+    .lsq_store_be_o       (lsq_store_be),
+    .lsq_store_rob_tag_o  (lsq_store_rob_tag),
+    // LSQ Load Forward Interface
+    .lsq_load_fwd_req_o       (lsq_load_fwd_req),
+    .lsq_load_fwd_rob_tag_o   (lsq_load_fwd_rob_tag),
+    .lsq_load_fwd_addr_o      (lsq_load_fwd_addr),
+    .lsq_load_fwd_valid_i     (lsq_load_fwd_valid),
+    .lsq_load_fwd_data_i      (lsq_load_fwd_data),
+    .lsq_load_fwd_be_i        (lsq_load_fwd_be),
+    // Memory Interface (loads only)
     .dmem_addr_o  (dmem_addr),
     .dmem_re_o    (dmem_re),
-    .dmem_we_o    (dmem_we),
-    .dmem_wdata_o (dmem_wdata),
     .dmem_rdata_i (dmem_rdata)
+  );
+
+  // ============================================================
+  // LOAD-STORE QUEUE
+  // ============================================================
+  LSQ #(
+    .SQ_DEPTH    (8),
+    .ROB_ENTRIES (ROB_ENTRIES)
+  ) u_lsq (
+    .clk          (clk),
+    .reset        (reset),
+    .flush_i      (branch_mispredict),
+    // ROB interface
+    .rob_head_i   (rob_head_dispatch),
+    .rob_tail_cp_i(rob_tail_cp_dispatch),
+    // Store allocation (when store dispatches)
+    .sq_alloc_valid_i   (store_alloc_valid),
+    .sq_alloc_rob_tag_i (store_alloc_rob_tag),
+    .sq_alloc_ready_o   (sq_alloc_ready),
+    .sq_alloc_idx_o     (sq_alloc_idx),
+    // Store address/data write (when store issues)
+    .sq_write_valid_i   (lsq_store_valid),
+    .sq_write_rob_tag_i (lsq_store_rob_tag),
+    .sq_write_addr_i    (lsq_store_addr),
+    .sq_write_data_i    (lsq_store_data),
+    .sq_write_be_i      (lsq_store_be),
+    // Load forward request
+    .ld_fwd_req_i       (lsq_load_fwd_req),
+    .ld_fwd_rob_tag_i   (lsq_load_fwd_rob_tag),
+    .ld_fwd_addr_i      (lsq_load_fwd_addr),
+    .ld_fwd_valid_o     (lsq_load_fwd_valid),
+    .ld_fwd_data_o      (lsq_load_fwd_data),
+    .ld_fwd_be_o        (lsq_load_fwd_be),
+    // Store commit (from ROB)
+    .sq_commit_valid_i   (commit_valid && !commit_writes_rd),
+    .sq_commit_rob_tag_i (commit_rob_tag),
+    .sq_commit_ready_o   (sq_commit_ready),
+    // Memory write interface
+    .mem_write_valid_o  (mem_write_valid),
+    .mem_write_addr_o   (mem_write_addr),
+    .mem_write_data_o   (mem_write_data),
+    .mem_write_be_o     (mem_write_be)
   );
 
   // ============================================================
   // DATA MEMORY
   // ============================================================
+  // Mux between load read and store write
+  logic [31:0] dmem_addr_mux;
+  logic [3:0]  dmem_we_mux;
+  logic [31:0] dmem_wdata_mux;
+  
+  assign dmem_addr_mux  = mem_write_valid ? mem_write_addr : dmem_addr;
+  assign dmem_we_mux    = mem_write_valid ? mem_write_be   : 4'b0000;
+  assign dmem_wdata_mux = mem_write_data;
+  
   data_memory #(
     .WORDS(131072) // 512KB memory
   ) u_dmem (
     .clk   (clk),
     .re    (dmem_re),
-    .we    (dmem_we),
-    .addr  (dmem_addr),
-    .wdata (dmem_wdata),
+    .we    (dmem_we_mux),
+    .addr  (dmem_addr_mux),
+    .wdata (dmem_wdata_mux),
     .rdata (dmem_rdata)
   );
 

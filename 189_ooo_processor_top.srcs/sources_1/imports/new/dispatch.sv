@@ -8,11 +8,8 @@ import cpu_pkg::*;
 // - Uses the PRF busy scoreboard to determine operand readiness and marks destinations busy on allocation
 // - Connects three issue paths to the PRF read ports and forwards operands plus packets to the execution units
 module dispatch_module #(
-    parameter int PHYS_REGS     = 128,
-    parameter int ALU_RS_DEPTH  = 8,
-    parameter int BR_RS_DEPTH   = 8,
-    parameter int LSU_RS_DEPTH  = 8,
-    parameter int ROB_DEPTH     = 16       
+    parameter int PHYS_REGS = 128,
+    parameter int ROB_DEPTH = 16       
 ) (
     input  logic clk,
     input  logic reset,
@@ -82,7 +79,19 @@ module dispatch_module #(
     // Commit outputs (broadcast to rename - NO ready signal, must always accept!)
     output logic        commit_valid_o,
     output logic        commit_writes_rd_o,
-    output logic [6:0]  commit_dst_old_o
+    output logic [6:0]  commit_dst_old_o,
+    output logic [$clog2(ROB_DEPTH)-1:0] commit_rob_tag_o,
+    
+    // ROB head/tail for LSQ age comparison
+    output logic [$clog2(ROB_DEPTH)-1:0] rob_head_o,
+    output logic [$clog2(ROB_DEPTH)-1:0] rob_tail_cp_o,
+    
+    // Store allocation for LSQ (when store dispatches)
+    output logic        store_alloc_valid_o,
+    output logic [$clog2(ROB_DEPTH)-1:0] store_alloc_rob_tag_o,
+    
+    // LSQ ready signal (for store dispatch backpressure)
+    input  logic        lsq_alloc_ready_i
 );
     // ==================================
     // 1. Single-entry pipeline buffer
@@ -181,11 +190,14 @@ module dispatch_module #(
     logic [$clog2(ROB_DEPTH)-1:0] rob_head_out;
     logic [$clog2(ROB_DEPTH)-1:0] rob_tail_cp_out;
     
-    // ALU RS
+    // ALU RS - Uses "oldest among ready" policy
     logic        alu_alloc_ready;
     logic        alu_alloc_valid;
     rs_pkt_t     alu_alloc_pkt;
-    RS #(.PHYS_REGS(PHYS_REGS), .ROB_ENTRIES(ROB_DEPTH)) u_rs_alu (
+    RS #(
+        .PHYS_REGS  (PHYS_REGS),
+        .ROB_ENTRIES(ROB_DEPTH)
+    ) u_rs_alu (
         .clk                  (clk),
         .reset                (reset),
         .recover_i            (recover_i),
@@ -206,11 +218,14 @@ module dispatch_module #(
         .issue_pkt_o          (alu_issue_pkt_o)
     );
 
-    // BR RS
+    // BR RS - Uses "oldest among ready" policy
     logic        br_alloc_ready;
     logic        br_alloc_valid;
     rs_pkt_t     br_alloc_pkt;
-    RS #(.PHYS_REGS(PHYS_REGS), .ROB_ENTRIES(ROB_DEPTH)) u_rs_br (
+    RS #(
+        .PHYS_REGS  (PHYS_REGS),
+        .ROB_ENTRIES(ROB_DEPTH)
+    ) u_rs_br (
         .clk                  (clk),
         .reset                (reset),
         .recover_i            (recover_i),
@@ -231,11 +246,14 @@ module dispatch_module #(
         .issue_pkt_o          (br_issue_pkt_o)
     );
 
-    // LSU RS
+    // LSU RS - Uses "oldest among ready" policy (LSQ handles memory ordering)
     logic        lsu_alloc_ready;
     logic        lsu_alloc_valid;
     rs_pkt_t     lsu_alloc_pkt;
-    RS #(.PHYS_REGS(PHYS_REGS), .ROB_ENTRIES(ROB_DEPTH), .STRICT_AGE_ORDER(1'b1)) u_rs_lsu (
+    RS #(
+        .PHYS_REGS  (PHYS_REGS),
+        .ROB_ENTRIES(ROB_DEPTH)
+    ) u_rs_lsu (
         .clk                  (clk),
         .reset                (reset),
         .recover_i            (recover_i),
@@ -301,6 +319,11 @@ module dispatch_module #(
     // =====================
     // Determine whether the target RS (based on FU type) has an available slot
     logic target_rs_ready;
+    logic is_store_instr;
+    
+    // micro_op[1] = sw (store operation)
+    assign is_store_instr = (pb_pkt.fu == 2'd2) && pb_pkt.micro_op[1];
+    
     always_comb begin
         unique case (pb_pkt.fu)
             2'd0: target_rs_ready = alu_alloc_ready;
@@ -310,8 +333,11 @@ module dispatch_module #(
         endcase
     end
 
-    // Skid consumer is ready only if the ROB can accept and the chosen RS has room
-    assign pb_ready = rob_ready & target_rs_ready;
+    // Skid consumer is ready only if:
+    // 1. ROB can accept
+    // 2. Target RS has room
+    // 3. For store: LSQ has room
+    assign pb_ready = rob_ready & target_rs_ready & (!is_store_instr | lsq_alloc_ready_i);
 
     // Only on accept do we assert alloc_valid for the chosen RS and build the rs_pkt
     // Also mark the destination PRF busy when the instruction writes back
@@ -364,5 +390,17 @@ module dispatch_module #(
             end
         end
     end
+
+    // ROB head/tail outputs for LSQ
+    assign rob_head_o    = rob_head_out;
+    assign rob_tail_cp_o = rob_tail_cp_out;
+    
+    // Store allocation: when a store dispatches to LSU RS
+    // micro_op[1] = sw (store operation)
+    assign store_alloc_valid_o   = lsu_alloc_valid && lsu_alloc_pkt.micro_op[1];
+    assign store_alloc_rob_tag_o = rob_tail_idx;
+    
+    // Commit ROB tag output (commit always happens at head)
+    assign commit_rob_tag_o = rob_head_out;
 
 endmodule

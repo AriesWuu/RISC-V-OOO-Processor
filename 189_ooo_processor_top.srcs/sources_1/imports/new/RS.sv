@@ -1,19 +1,21 @@
 `timescale 1ns / 1ps
 
 import cpu_pkg::*;
+
+// Reservation Station - All RS use "oldest among ready" issue policy
+// Memory ordering is handled by LSQ, not RS
 module RS #(
-  parameter int PHYS_REGS = 128,
-  parameter int ROB_ENTRIES = 16,
-  parameter bit STRICT_AGE_ORDER = 1'b0
+  parameter int PHYS_REGS   = 128,
+  parameter int ROB_ENTRIES = 16
 )(
   input  logic clk, reset,
   input  logic recover_i,
-  input  logic [$clog2(ROB_ENTRIES)-1:0] rob_head_i,    // ROB head for speculation check
-  input  logic [$clog2(ROB_ENTRIES)-1:0] rob_tail_cp_i, // ROB tail checkpoint
+  input  logic [$clog2(ROB_ENTRIES)-1:0] rob_head_i,
+  input  logic [$clog2(ROB_ENTRIES)-1:0] rob_tail_cp_i,
 
   input  logic [PHYS_REGS-1:0] prf_busy_i,
 
-  // Same-cycle wakeup: treat matching writeback destinations as ready
+  // Same-cycle wakeup from writeback buses
   input  logic        wb_alu_valid_i,
   input  logic [6:0]  wb_alu_prf_i,
   input  logic        wb_br_valid_i,
@@ -22,18 +24,16 @@ module RS #(
   input  logic [6:0]  wb_lsu_prf_i,
 
   // Allocation from dispatch
-  input  logic   alloc_valid_i,
-  output logic   alloc_ready_o,
-  input  rs_pkt_t alloc_pkt_i,
+  input  logic      alloc_valid_i,
+  output logic      alloc_ready_o,
+  input  rs_pkt_t   alloc_pkt_i,
 
-  // Issue to EXU (one per cycle max)
-  input  logic   exu_ready_i,
-  output logic   issue_valid_o,
-  output rs_pkt_t issue_pkt_o
-
-  // CDB wakeup is now handled implicitly via prf_busy_i
-  // prf_busy is cleared combinationally when CDB writes back
+  // Issue to EXU
+  input  logic      exu_ready_i,
+  output logic      issue_valid_o,
+  output rs_pkt_t   issue_pkt_o
 );
+
   typedef struct packed {
     logic    valid;
     rs_pkt_t pkt;
@@ -41,40 +41,24 @@ module RS #(
 
   slot_t slots[8];
 
-  // ---------- ROB age compare (wrap-aware) ----------
-  // Returns 1 if tag_a is older than tag_b, using rob_head as the reference point.
-  function automatic logic rob_older(
-    input logic [$clog2(ROB_ENTRIES)-1:0] tag_a,
-    input logic [$clog2(ROB_ENTRIES)-1:0] tag_b,
-    input logic [$clog2(ROB_ENTRIES)-1:0] head
-  );
-    logic [$clog2(ROB_ENTRIES)-1:0] dist_a;
-    logic [$clog2(ROB_ENTRIES)-1:0] dist_b;
-    begin
-      dist_a = tag_a - head;
-      dist_b = tag_b - head;
-      rob_older = (dist_a < dist_b);
-    end
-  endfunction
-
   // ---------- Allocation: priority decode to find a free slot ----------
   logic [7:0] free_mask;
-  for (genvar i=0;i<8;i++) begin : g_free
+  for (genvar i = 0; i < 8; i++) begin : g_free
     assign free_mask[i] = !slots[i].valid;
   end
 
-  // Priority decoder: return index of first '1' (LSB has highest priority), or 4'hF if none
+  // Priority decoder: return index of first '1', or 4'hF if none
   function automatic [3:0] pdec_first1(input logic [7:0] m);
     logic       found;
     logic [3:0] idx;
     logic [3:0] i;
     begin
       found = 1'b0;
-      idx   = 4'hF; // default: no bit set
+      idx   = 4'hF;
       for (i = 0; i < 8; i = i + 1) begin
         if (!found && m[i]) begin
           idx   = i;
-          found = 1'b1; // remember we've taken the first one
+          found = 1'b1;
         end
       end
       pdec_first1 = idx;
@@ -82,18 +66,18 @@ module RS #(
   endfunction
 
   logic [3:0] alloc_idx;
-  assign alloc_idx = pdec_first1(free_mask);
-  assign alloc_ready_o  = (alloc_idx != 4'hF);
+  assign alloc_idx     = pdec_first1(free_mask);
+  assign alloc_ready_o = (alloc_idx != 4'hF);
 
-  // ---------- generate ready mask ----------
+  // ---------- Ready mask and age distance ----------
   logic [7:0] ready_mask;
   logic [$clog2(ROB_ENTRIES)-1:0] age_dist [8];
+  
   always_comb begin
     for (int j = 0; j < 8; j++) begin
       logic src0_ready;
       logic src1_ready;
 
-      // update src ready status and age distance
       if (slots[j].valid) begin
         age_dist[j] = slots[j].pkt.rob_tag - rob_head_i;
 
@@ -116,9 +100,7 @@ module RS #(
     end
   end
   
-  // Find issue candidate:
-  // - STRICT_AGE_ORDER=0: oldest among ready entries
-  // - STRICT_AGE_ORDER=1: only allow the globally-oldest valid entry to issue (and only if it is ready)
+  // ---------- Issue selection: oldest among ready ----------
   logic [3:0] issue_idx;
   logic       has_ready;
   
@@ -126,43 +108,21 @@ module RS #(
     issue_idx = 4'hF;
     has_ready = 1'b0;
 
-    if (STRICT_AGE_ORDER) begin
-      logic [3:0] oldest_valid_idx;
-      logic       has_valid;
-
-      oldest_valid_idx = 4'hF;
-      has_valid        = 1'b0;
-
-      for (int i = 0; i < 8; i++) begin
-        if (slots[i].valid) begin
-          if (!has_valid || (age_dist[i] < age_dist[oldest_valid_idx])) begin
-            oldest_valid_idx = i[3:0];
-            has_valid        = 1'b1;
-          end
-        end
-      end
-
-      has_ready = has_valid && ready_mask[oldest_valid_idx];
-      issue_idx = has_ready ? oldest_valid_idx : 4'hF;
-    end else begin
-      for (int i = 0; i < 8; i++) begin
-        if (ready_mask[i]) begin
-          if (!has_ready || (age_dist[i] < age_dist[issue_idx])) begin
-            issue_idx = i[3:0];
-            has_ready = 1'b1;
-          end
+    // Find oldest ready entry
+    for (int i = 0; i < 8; i++) begin
+      if (ready_mask[i]) begin
+        if (!has_ready || (age_dist[i] < age_dist[issue_idx])) begin
+          issue_idx = i[3:0];
+          has_ready = 1'b1;
         end
       end
     end
   end
 
-  // Don't issue during recover cycle to avoid issuing speculative instructions
-  assign issue_valid_o  = has_ready & exu_ready_i & !recover_i;
-  assign issue_pkt_o    = has_ready ? slots[issue_idx].pkt : '0;
+  assign issue_valid_o = has_ready & exu_ready_i & !recover_i;
+  assign issue_pkt_o   = has_ready ? slots[issue_idx].pkt : '0;
 
-  // ---------- Speculation check function ----------
-  // Returns 1 if rob_tag is in the speculative range [tail_cp, tail)
-  // Non-speculative range is [head, tail_cp)
+  // ---------- Speculation check ----------
   function automatic logic is_speculative(
     input logic [$clog2(ROB_ENTRIES)-1:0] rob_tag,
     input logic [$clog2(ROB_ENTRIES)-1:0] head,
@@ -170,14 +130,10 @@ module RS #(
   );
     logic in_valid_range;
     begin
-      // Check if rob_tag is in non-speculative range [head, tail_cp)
-      if (head <= tail_cp) begin
-        // Non-wrapping: valid if head <= tag < tail_cp
+      if (head <= tail_cp)
         in_valid_range = (rob_tag >= head) && (rob_tag < tail_cp);
-      end else begin
-        // Wrapping: valid if tag >= head OR tag < tail_cp
+      else
         in_valid_range = (rob_tag >= head) || (rob_tag < tail_cp);
-      end
       is_speculative = !in_valid_range;
     end
   endfunction
@@ -186,13 +142,11 @@ module RS #(
   logic [3:0] k;
   always_ff @(posedge clk or posedge reset) begin
     if (reset) begin
-      for (k=0;k<8;k++) slots[k] <= '0;
+      for (k = 0; k < 8; k++) slots[k] <= '0;
     end else if (recover_i) begin
-      // On misprediction, only clear speculative entries (those with rob_tag in [tail_cp, tail))
-      for (k=0;k<8;k++) begin
-        if (slots[k].valid && is_speculative(slots[k].pkt.rob_tag, rob_head_i, rob_tail_cp_i)) begin
+      for (k = 0; k < 8; k++) begin
+        if (slots[k].valid && is_speculative(slots[k].pkt.rob_tag, rob_head_i, rob_tail_cp_i))
           slots[k] <= '0;
-        end
       end
     end else begin
       // Allocate
@@ -206,4 +160,5 @@ module RS #(
       end
     end
   end
+
 endmodule
