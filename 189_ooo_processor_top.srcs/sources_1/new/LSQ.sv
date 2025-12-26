@@ -67,6 +67,10 @@ module LSQ #(
   } sq_entry_t;
   
   sq_entry_t sq [SQ_DEPTH];
+
+  // Map ROB tag -> SQ index to avoid searching the whole SQ on store issue
+  logic [SQ_BITS-1:0] rob_to_sq_idx [ROB_ENTRIES];
+  logic               rob_to_sq_vld [ROB_ENTRIES];
   
   // SQ pointers (circular buffer)
   logic [SQ_BITS:0] sq_head, sq_tail;
@@ -206,12 +210,17 @@ module LSQ #(
       for (int i = 0; i < SQ_DEPTH; i++) begin
         sq[i] <= '0;
       end
+      for (int t = 0; t < ROB_ENTRIES; t++) begin
+        rob_to_sq_idx[t] <= '0;
+        rob_to_sq_vld[t] <= 1'b0;
+      end
       sq_head <= '0;
       sq_tail <= '0;
     end else if (flush_i) begin
       // Clear speculative entries
       for (int i = 0; i < SQ_DEPTH; i++) begin
         if (sq[i].valid && is_speculative(sq[i].rob_tag, rob_head_i, rob_tail_cp_i)) begin
+          rob_to_sq_vld[sq[i].rob_tag] <= 1'b0;
           sq[i] <= '0;
         end
       end
@@ -226,23 +235,31 @@ module LSQ #(
         sq[sq_tail[SQ_BITS-1:0]].word_addr  <= '0;
         sq[sq_tail[SQ_BITS-1:0]].data       <= '0;
         sq[sq_tail[SQ_BITS-1:0]].be         <= '0;
+
+        rob_to_sq_idx[sq_alloc_rob_tag_i] <= sq_tail[SQ_BITS-1:0];
+        rob_to_sq_vld[sq_alloc_rob_tag_i] <= 1'b1;
         sq_tail <= sq_tail + 1'b1;
       end
       
       // Write address/data to store entry (when store issues)
       if (sq_write_valid_i) begin
-        for (int i = 0; i < SQ_DEPTH; i++) begin
-          if (sq[i].valid && (sq[i].rob_tag == sq_write_rob_tag_i) && !sq[i].addr_valid) begin
-            sq[i].addr_valid <= 1'b1;
-            sq[i].word_addr  <= sq_write_addr_i[31:2];
-            sq[i].data       <= sq_write_data_i;
-            sq[i].be         <= sq_write_be_i;
+        if (rob_to_sq_vld[sq_write_rob_tag_i]) begin
+          logic [SQ_BITS-1:0] widx;
+          widx = rob_to_sq_idx[sq_write_rob_tag_i];
+          if (sq[widx].valid && (sq[widx].rob_tag == sq_write_rob_tag_i) && !sq[widx].addr_valid) begin
+            sq[widx].addr_valid <= 1'b1;
+            sq[widx].word_addr  <= sq_write_addr_i[31:2];
+            sq[widx].data       <= sq_write_data_i;
+            sq[widx].be         <= sq_write_be_i;
           end
         end
       end
       
       // Commit store (dequeue from head)
       if (sq_commit_valid_i && sq_commit_ready_o) begin
+        if (sq[sq_head[SQ_BITS-1:0]].valid) begin
+          rob_to_sq_vld[sq[sq_head[SQ_BITS-1:0]].rob_tag] <= 1'b0;
+        end
         sq[sq_head[SQ_BITS-1:0]] <= '0;
         sq_head <= sq_head + 1'b1;
       end

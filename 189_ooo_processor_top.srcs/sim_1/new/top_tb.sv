@@ -22,8 +22,8 @@ module top_tb;
   top #(
     .PHYS_REGS   (128),
     .ROB_ENTRIES (16),
-    .WORDS       (512),
-    .MEMFILE     ("25instMem-r.mem")
+    .WORDS       (128),
+    .MEMFILE     ("25instMem-test.mem")
   ) u_dut (
     .clk            (clk),
     .reset          (reset),

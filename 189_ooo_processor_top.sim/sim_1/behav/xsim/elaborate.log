@@ -11,8 +11,8 @@ Completed simulation data flow analysis
 Time Resolution for simulation is 1ps
 Compiling package xil_defaultlib.cpu_pkg
 Compiling module xil_defaultlib.pc_counter
-Compiling module xil_defaultlib.i_cache(MEMFILE="25instMem-r.mem...
-Compiling module xil_defaultlib.fetch_module(MEMFILE="25instMem-...
+Compiling module xil_defaultlib.i_cache(WORDS=128,MEMFILE="25ins...
+Compiling module xil_defaultlib.fetch_module(WORDS=128,MEMFILE="...
 Compiling module xil_defaultlib.branch_predictor_default
 Compiling module xil_defaultlib.pipeline_skid_buffer_struct(T=lo...
 Compiling module xil_defaultlib.imm_gen
@@ -33,8 +33,8 @@ Compiling module xil_defaultlib.ALU_unit
 Compiling module xil_defaultlib.branch_unit
 Compiling module xil_defaultlib.LSU_unit
 Compiling module xil_defaultlib.LSQ_default
-Compiling module xil_defaultlib.data_memory(WORDS=131072)
-Compiling module xil_defaultlib.top_default
+Compiling module xil_defaultlib.data_memory(WORDS=32768)
+Compiling module xil_defaultlib.top(WORDS=128,MEMFILE="25instMem...
 Compiling module xil_defaultlib.top_tb
 Compiling module xil_defaultlib.glbl
 Built simulation snapshot top_tb_behav

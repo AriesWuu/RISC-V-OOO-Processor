@@ -92,6 +92,7 @@ module rename_module #(
 
   // ---- Free List 实例 ----
   free_list #(
+    .ARCH_REGS   (ARCH_REGS),
     .PHYS_REGS   (PHYS_REGS),
     .ROB_ENTRIES (ROB_ENTRIES)
   ) u_free_list (

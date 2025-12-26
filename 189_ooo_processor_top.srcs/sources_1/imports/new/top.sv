@@ -5,6 +5,7 @@ module top #(
   parameter int    PHYS_REGS   = 128,
   parameter int    ROB_ENTRIES = 16,
   parameter int    WORDS       = 512,
+  parameter int    DMEM_WORDS  = 32768,
   parameter string MEMFILE     = "25instMem-r.mem"
 )(
   input  logic        clk,
@@ -531,23 +532,17 @@ module top #(
   // ============================================================
   // DATA MEMORY
   // ============================================================
-  // Mux between load read and store write
-  logic [31:0] dmem_addr_mux;
-  logic [3:0]  dmem_we_mux;
-  logic [31:0] dmem_wdata_mux;
-  
-  assign dmem_addr_mux  = mem_write_valid ? mem_write_addr : dmem_addr;
-  assign dmem_we_mux    = mem_write_valid ? mem_write_be   : 4'b0000;
-  assign dmem_wdata_mux = mem_write_data;
-  
   data_memory #(
-    .WORDS(131072) // 512KB memory
+    .WORDS(DMEM_WORDS) // default: 131072 words = 512KB (32-bit words)
   ) u_dmem (
     .clk   (clk),
+    // Read port (loads)
     .re    (dmem_re),
-    .we    (dmem_we_mux),
-    .addr  (dmem_addr_mux),
-    .wdata (dmem_wdata_mux),
+    .raddr (dmem_addr),
+    // Write port (committed stores)
+    .we    (mem_write_valid ? mem_write_be : 4'b0000),
+    .waddr (mem_write_addr),
+    .wdata (mem_write_data),
     .rdata (dmem_rdata)
   );
 

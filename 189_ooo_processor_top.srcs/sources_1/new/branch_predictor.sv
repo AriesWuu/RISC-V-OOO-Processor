@@ -52,7 +52,7 @@ module branch_predictor #(
   assign hit = |match_vec;
 
   always_comb begin
-    // One-hot select; avoids indexing logic when miss and avoids long priority chain.
+    // One-hot select
     taken_sel  = 1'b0;
     target_sel = 32'b0;
     for (int i = 0; i < ENTRIES; i++) begin

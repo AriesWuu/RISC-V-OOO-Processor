@@ -1,4 +1,5 @@
 module free_list #(
+  parameter int ARCH_REGS   = 32,
   parameter int PHYS_REGS   = 96,
   parameter int ROB_ENTRIES = 16
 )(
@@ -15,11 +16,15 @@ module free_list #(
   output logic [6:0] new_preg          // allocated physical register
 );
 
-  // Storage for free-list order (optional content tracking)
-  logic [6:0] buffer_mem [0:PHYS_REGS-1];
+  // Free-list holds the pool of physical registers NOT currently assigned
+  // to architectural registers at reset. Treat PHYS_REGS as the total count.
+  localparam int FREE_REGS = (PHYS_REGS > ARCH_REGS) ? (PHYS_REGS - ARCH_REGS) : 1;
 
-  // Pointer bits: index bits = $clog2(PHYS_REGS); add flip bit => width = index_bits+1
-  localparam int INDEX_BITS = $clog2(PHYS_REGS);
+  // Storage for free-list order (optional content tracking)
+  logic [6:0] buffer_mem [0:FREE_REGS-1];
+
+  // Pointer bits: index bits = $clog2(FREE_REGS); add flip bit => width = index_bits+1
+  localparam int INDEX_BITS = $clog2(FREE_REGS);
   logic [INDEX_BITS:0] wr_ptr, rd_ptr;       // write (retire) / read (allocate) pointers
   // Multiple checkpoints indexed by ROB tag
   logic [INDEX_BITS:0] wr_ptr_cp [0:ROB_ENTRIES-1];
@@ -29,7 +34,7 @@ module free_list #(
 
   // Round-aware bump: toggle flip bit when wrapping last index
   function automatic logic [INDEX_BITS:0] bump(input logic [INDEX_BITS:0] p);
-    bump = (p[INDEX_BITS-1:0] == PHYS_REGS-1) ? {~p[INDEX_BITS], {(INDEX_BITS){1'b0}}} : (p + 1'b1);
+    bump = (p[INDEX_BITS-1:0] == FREE_REGS-1) ? {~p[INDEX_BITS], {(INDEX_BITS){1'b0}}} : (p + 1'b1);
   endfunction
 
   // Allocation ready when not empty
@@ -49,8 +54,8 @@ module free_list #(
         rd_ptr_cp[i] <= {1'b0, {(INDEX_BITS){1'b0}}};
         wr_ptr_cp[i] <= {1'b1, {(INDEX_BITS){1'b0}}};
       end
-      for (i = 0; i < PHYS_REGS; i = i + 1) begin
-        buffer_mem[i] <= i + 7'd32; // example initial free physical registers
+      for (i = 0; i < FREE_REGS; i = i + 1) begin
+        buffer_mem[i] <= i + ARCH_REGS[6:0];
       end
     end else begin
       // Branch recover restore
@@ -79,4 +84,12 @@ module free_list #(
       end
     end
   end
+
+`ifndef SYNTHESIS
+  initial begin
+    if (PHYS_REGS <= ARCH_REGS) begin
+      $fatal(1, "free_list: PHYS_REGS (%0d) must be > ARCH_REGS (%0d)", PHYS_REGS, ARCH_REGS);
+    end
+  end
+`endif
 endmodule

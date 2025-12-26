@@ -1,0 +1,748 @@
+#-----------------------------------------------------------
+# Vivado v2025.1 (64-bit)
+# SW Build 6140274 on Thu May 22 00:12:29 MDT 2025
+# IP Build 6138677 on Thu May 22 03:10:11 MDT 2025
+# SharedData Build 6139179 on Tue May 20 17:58:58 MDT 2025
+# Start of session at: Thu Dec 25 15:58:49 2025
+# Process ID         : 2724
+# Current directory  : D:/Vivado_Project/116C_Honor/189_ooo_processor_top/189_ooo_processor_top.runs/synth_1
+# Command line       : vivado.exe -log top.vds -product Vivado -mode batch -messageDb vivado.pb -notrace -source top.tcl
+# Log file           : D:/Vivado_Project/116C_Honor/189_ooo_processor_top/189_ooo_processor_top.runs/synth_1/top.vds
+# Journal file       : D:/Vivado_Project/116C_Honor/189_ooo_processor_top/189_ooo_processor_top.runs/synth_1\vivado.jou
+# Running On         : LAPTOP-N6UO8VGR
+# Platform           : Windows Server 2016 or Windows 10
+# Operating System   : 26100
+# Processor Detail   : Intel(R) Core(TM) Ultra 9 185H
+# CPU Frequency      : 3072 MHz
+# CPU Physical cores : 16
+# CPU Logical cores  : 22
+# Host memory        : 33736 MB
+# Swap memory        : 13958 MB
+# Total Virtual      : 47694 MB
+# Available Virtual  : 23250 MB
+#-----------------------------------------------------------
+source top.tcl -notrace
+create_project: Time (s): cpu = 00:00:07 ; elapsed = 00:00:06 . Memory (MB): peak = 499.270 ; gain = 214.719
+Command: read_checkpoint -auto_incremental -incremental D:/Vivado_Project/116C_Honor/189_ooo_processor_top/189_ooo_processor_top.srcs/utils_1/imports/synth_1/top.dcp
+INFO: [Vivado 12-5825] Read reference checkpoint from D:/Vivado_Project/116C_Honor/189_ooo_processor_top/189_ooo_processor_top.srcs/utils_1/imports/synth_1/top.dcp for incremental synthesis
+INFO: [Vivado 12-7989] Please ensure there are no constraint changes
+Command: synth_design -top top -part xc7z020clg400-1
+Starting synth_design
+Attempting to get a license for feature 'Synthesis' and/or device 'xc7z020'
+INFO: [Common 17-349] Got license for feature 'Synthesis' and/or device 'xc7z020'
+INFO: [Device 21-403] Loading part xc7z020clg400-1
+INFO: [Synth 8-7079] Multithreading enabled for synth_design using a maximum of 2 processes.
+INFO: [Synth 8-7078] Launching helper process for spawning children vivado processes
+INFO: [Synth 8-7075] Helper process launched with PID 15612
+---------------------------------------------------------------------------------
+Starting RTL Elaboration : Time (s): cpu = 00:00:03 ; elapsed = 00:00:04 . Memory (MB): peak = 1236.715 ; gain = 497.953
+---------------------------------------------------------------------------------
+WARNING: [Synth 8-11067] parameter 'PHYS_REGS' declared inside package 'cpu_pkg' shall be treated as localparam [D:/Vivado_Project/116C_Honor/189_ooo_processor_top/189_ooo_processor_top.srcs/sources_1/imports/new/cpu_pkg.sv:4]
+WARNING: [Synth 8-11067] parameter 'ROB_ENTRIES' declared inside package 'cpu_pkg' shall be treated as localparam [D:/Vivado_Project/116C_Honor/189_ooo_processor_top/189_ooo_processor_top.srcs/sources_1/imports/new/cpu_pkg.sv:5]
+WARNING: [Synth 8-11067] parameter 'IMM_BITS' declared inside package 'cpu_pkg' shall be treated as localparam [D:/Vivado_Project/116C_Honor/189_ooo_processor_top/189_ooo_processor_top.srcs/sources_1/imports/new/cpu_pkg.sv:6]
+INFO: [Synth 8-11241] undeclared symbol 'sq_alloc_ready', assumed default net type 'wire' [D:/Vivado_Project/116C_Honor/189_ooo_processor_top/189_ooo_processor_top.srcs/sources_1/imports/new/top.sv:403]
+WARNING: [Synth 8-8895] 'sq_alloc_ready' is already implicitly declared on line 403 [D:/Vivado_Project/116C_Honor/189_ooo_processor_top/189_ooo_processor_top.srcs/sources_1/imports/new/top.sv:515]
+INFO: [Synth 8-6157] synthesizing module 'top' [D:/Vivado_Project/116C_Honor/189_ooo_processor_top/189_ooo_processor_top.srcs/sources_1/imports/new/top.sv:4]
+INFO: [Synth 8-6157] synthesizing module 'fetch_module' [D:/Vivado_Project/116C_Honor/189_ooo_processor_top/189_ooo_processor_top.srcs/sources_1/imports/new/fetch_module.sv:3]
+	Parameter WORDS bound to: 32'sb00000000000000000000001000000000 
+	Parameter MEMFILE bound to: 25instMem-r.mem - type: string 
+INFO: [Synth 8-6157] synthesizing module 'pc_counter' [D:/Vivado_Project/116C_Honor/189_ooo_processor_top/189_ooo_processor_top.srcs/sources_1/imports/new/pc_counter.sv:1]
+INFO: [Synth 8-6155] done synthesizing module 'pc_counter' (0#1) [D:/Vivado_Project/116C_Honor/189_ooo_processor_top/189_ooo_processor_top.srcs/sources_1/imports/new/pc_counter.sv:1]
+INFO: [Synth 8-6157] synthesizing module 'i_cache' [D:/Vivado_Project/116C_Honor/189_ooo_processor_top/189_ooo_processor_top.srcs/sources_1/imports/new/i_cache.sv:1]
+	Parameter WORDS bound to: 512 - type: integer 
+	Parameter MEMFILE bound to: 25instMem-r.mem - type: string 
+INFO: [Synth 8-3876] $readmem data file '25instMem-r.mem' is read successfully [D:/Vivado_Project/116C_Honor/189_ooo_processor_top/189_ooo_processor_top.srcs/sources_1/imports/new/i_cache.sv:20]
+INFO: [Synth 8-6155] done synthesizing module 'i_cache' (0#1) [D:/Vivado_Project/116C_Honor/189_ooo_processor_top/189_ooo_processor_top.srcs/sources_1/imports/new/i_cache.sv:1]
+INFO: [Synth 8-6155] done synthesizing module 'fetch_module' (0#1) [D:/Vivado_Project/116C_Honor/189_ooo_processor_top/189_ooo_processor_top.srcs/sources_1/imports/new/fetch_module.sv:3]
+INFO: [Synth 8-6157] synthesizing module 'branch_predictor' [D:/Vivado_Project/116C_Honor/189_ooo_processor_top/189_ooo_processor_top.srcs/sources_1/new/branch_predictor.sv:3]
+	Parameter ENTRIES bound to: 32'sb00000000000000000000000000001000 
+INFO: [Synth 8-6155] done synthesizing module 'branch_predictor' (0#1) [D:/Vivado_Project/116C_Honor/189_ooo_processor_top/189_ooo_processor_top.srcs/sources_1/new/branch_predictor.sv:3]
+INFO: [Synth 8-6157] synthesizing module 'pipeline_skid_buffer_struct' [D:/Vivado_Project/116C_Honor/189_ooo_processor_top/189_ooo_processor_top.srcs/sources_1/imports/new/pipeline_skid_buffer_struct.sv:1]
+INFO: [Synth 8-6155] done synthesizing module 'pipeline_skid_buffer_struct' (0#1) [D:/Vivado_Project/116C_Honor/189_ooo_processor_top/189_ooo_processor_top.srcs/sources_1/imports/new/pipeline_skid_buffer_struct.sv:1]
+INFO: [Synth 8-6157] synthesizing module 'decode_module' [D:/Vivado_Project/116C_Honor/189_ooo_processor_top/189_ooo_processor_top.srcs/sources_1/imports/new/decode_module.sv:1]
+INFO: [Synth 8-6157] synthesizing module 'imm_gen' [D:/Vivado_Project/116C_Honor/189_ooo_processor_top/189_ooo_processor_top.srcs/sources_1/imports/new/imm_gen.sv:1]
+INFO: [Synth 8-294] found qualifier unique on case statement: implementing as parallel_case [D:/Vivado_Project/116C_Honor/189_ooo_processor_top/189_ooo_processor_top.srcs/sources_1/imports/new/imm_gen.sv:33]
+INFO: [Synth 8-6155] done synthesizing module 'imm_gen' (0#1) [D:/Vivado_Project/116C_Honor/189_ooo_processor_top/189_ooo_processor_top.srcs/sources_1/imports/new/imm_gen.sv:1]
+INFO: [Synth 8-6157] synthesizing module 'control_unit' [D:/Vivado_Project/116C_Honor/189_ooo_processor_top/189_ooo_processor_top.srcs/sources_1/imports/new/control_unit.sv:1]
+INFO: [Synth 8-6155] done synthesizing module 'control_unit' (0#1) [D:/Vivado_Project/116C_Honor/189_ooo_processor_top/189_ooo_processor_top.srcs/sources_1/imports/new/control_unit.sv:1]
+INFO: [Synth 8-6157] synthesizing module 'alu_control' [D:/Vivado_Project/116C_Honor/189_ooo_processor_top/189_ooo_processor_top.srcs/sources_1/imports/new/alu_control.sv:1]
+INFO: [Synth 8-226] default block is never used [D:/Vivado_Project/116C_Honor/189_ooo_processor_top/189_ooo_processor_top.srcs/sources_1/imports/new/alu_control.sv:21]
+INFO: [Synth 8-6155] done synthesizing module 'alu_control' (0#1) [D:/Vivado_Project/116C_Honor/189_ooo_processor_top/189_ooo_processor_top.srcs/sources_1/imports/new/alu_control.sv:1]
+INFO: [Synth 8-6155] done synthesizing module 'decode_module' (0#1) [D:/Vivado_Project/116C_Honor/189_ooo_processor_top/189_ooo_processor_top.srcs/sources_1/imports/new/decode_module.sv:1]
+INFO: [Synth 8-6157] synthesizing module 'pipeline_skid_buffer_struct__parameterized0' [D:/Vivado_Project/116C_Honor/189_ooo_processor_top/189_ooo_processor_top.srcs/sources_1/imports/new/pipeline_skid_buffer_struct.sv:1]
+INFO: [Synth 8-6155] done synthesizing module 'pipeline_skid_buffer_struct__parameterized0' (0#1) [D:/Vivado_Project/116C_Honor/189_ooo_processor_top/189_ooo_processor_top.srcs/sources_1/imports/new/pipeline_skid_buffer_struct.sv:1]
+INFO: [Synth 8-6157] synthesizing module 'rename_module' [D:/Vivado_Project/116C_Honor/189_ooo_processor_top/189_ooo_processor_top.srcs/sources_1/imports/new/rename.sv:1]
+	Parameter ARCH_REGS bound to: 32'sb00000000000000000000000000100000 
+	Parameter PHYS_REGS bound to: 32'sb00000000000000000000000010000000 
+	Parameter ROB_ENTRIES bound to: 32'sb00000000000000000000000000010000 
+INFO: [Synth 8-6157] synthesizing module 'map_table' [D:/Vivado_Project/116C_Honor/189_ooo_processor_top/189_ooo_processor_top.srcs/sources_1/imports/new/map_table.sv:1]
+	Parameter ARCH_REGS bound to: 32'sb00000000000000000000000000100000 
+	Parameter ROB_ENTRIES bound to: 32'sb00000000000000000000000000010000 
+INFO: [Synth 8-6155] done synthesizing module 'map_table' (0#1) [D:/Vivado_Project/116C_Honor/189_ooo_processor_top/189_ooo_processor_top.srcs/sources_1/imports/new/map_table.sv:1]
+INFO: [Synth 8-6157] synthesizing module 'free_list' [D:/Vivado_Project/116C_Honor/189_ooo_processor_top/189_ooo_processor_top.srcs/sources_1/imports/new/free_list.sv:1]
+	Parameter ARCH_REGS bound to: 32'sb00000000000000000000000000100000 
+	Parameter PHYS_REGS bound to: 32'sb00000000000000000000000010000000 
+	Parameter ROB_ENTRIES bound to: 32'sb00000000000000000000000000010000 
+INFO: [Synth 8-6155] done synthesizing module 'free_list' (0#1) [D:/Vivado_Project/116C_Honor/189_ooo_processor_top/189_ooo_processor_top.srcs/sources_1/imports/new/free_list.sv:1]
+INFO: [Synth 8-6157] synthesizing module 'rob_tag' [D:/Vivado_Project/116C_Honor/189_ooo_processor_top/189_ooo_processor_top.srcs/sources_1/imports/new/rob_tag.sv:4]
+	Parameter ROB_ENTRIES bound to: 32'sb00000000000000000000000000010000 
+INFO: [Synth 8-6155] done synthesizing module 'rob_tag' (0#1) [D:/Vivado_Project/116C_Honor/189_ooo_processor_top/189_ooo_processor_top.srcs/sources_1/imports/new/rob_tag.sv:4]
+INFO: [Synth 8-6155] done synthesizing module 'rename_module' (0#1) [D:/Vivado_Project/116C_Honor/189_ooo_processor_top/189_ooo_processor_top.srcs/sources_1/imports/new/rename.sv:1]
+INFO: [Synth 8-6157] synthesizing module 'dispatch_module' [D:/Vivado_Project/116C_Honor/189_ooo_processor_top/189_ooo_processor_top.srcs/sources_1/imports/new/dispatch.sv:10]
+	Parameter PHYS_REGS bound to: 32'sb00000000000000000000000010000000 
+	Parameter ROB_DEPTH bound to: 32'sb00000000000000000000000000010000 
+INFO: [Synth 8-6157] synthesizing module 'pipeline_skid_buffer_struct__parameterized1' [D:/Vivado_Project/116C_Honor/189_ooo_processor_top/189_ooo_processor_top.srcs/sources_1/imports/new/pipeline_skid_buffer_struct.sv:1]
+INFO: [Synth 8-6155] done synthesizing module 'pipeline_skid_buffer_struct__parameterized1' (0#1) [D:/Vivado_Project/116C_Honor/189_ooo_processor_top/189_ooo_processor_top.srcs/sources_1/imports/new/pipeline_skid_buffer_struct.sv:1]
+INFO: [Synth 8-6157] synthesizing module 'PRF' [D:/Vivado_Project/116C_Honor/189_ooo_processor_top/189_ooo_processor_top.srcs/sources_1/imports/new/PRF.sv:3]
+	Parameter PHYS_REGS bound to: 32'sb00000000000000000000000010000000 
+INFO: [Synth 8-6155] done synthesizing module 'PRF' (0#1) [D:/Vivado_Project/116C_Honor/189_ooo_processor_top/189_ooo_processor_top.srcs/sources_1/imports/new/PRF.sv:3]
+INFO: [Synth 8-6157] synthesizing module 'RS' [D:/Vivado_Project/116C_Honor/189_ooo_processor_top/189_ooo_processor_top.srcs/sources_1/imports/new/RS.sv:7]
+	Parameter PHYS_REGS bound to: 32'sb00000000000000000000000010000000 
+	Parameter ROB_ENTRIES bound to: 32'sb00000000000000000000000000010000 
+INFO: [Synth 8-6155] done synthesizing module 'RS' (0#1) [D:/Vivado_Project/116C_Honor/189_ooo_processor_top/189_ooo_processor_top.srcs/sources_1/imports/new/RS.sv:7]
+INFO: [Synth 8-6157] synthesizing module 'ROB' [D:/Vivado_Project/116C_Honor/189_ooo_processor_top/189_ooo_processor_top.srcs/sources_1/imports/new/ROB.sv:3]
+	Parameter ROB_ENTRIES bound to: 16 - type: integer 
+INFO: [Synth 8-6155] done synthesizing module 'ROB' (0#1) [D:/Vivado_Project/116C_Honor/189_ooo_processor_top/189_ooo_processor_top.srcs/sources_1/imports/new/ROB.sv:3]
+INFO: [Synth 8-294] found qualifier unique on case statement: implementing as parallel_case [D:/Vivado_Project/116C_Honor/189_ooo_processor_top/189_ooo_processor_top.srcs/sources_1/imports/new/dispatch.sv:373]
+INFO: [Synth 8-294] found qualifier unique on case statement: implementing as parallel_case [D:/Vivado_Project/116C_Honor/189_ooo_processor_top/189_ooo_processor_top.srcs/sources_1/imports/new/dispatch.sv:414]
+INFO: [Synth 8-6155] done synthesizing module 'dispatch_module' (0#1) [D:/Vivado_Project/116C_Honor/189_ooo_processor_top/189_ooo_processor_top.srcs/sources_1/imports/new/dispatch.sv:10]
+INFO: [Synth 8-6157] synthesizing module 'pipeline_skid_buffer_struct__parameterized2' [D:/Vivado_Project/116C_Honor/189_ooo_processor_top/189_ooo_processor_top.srcs/sources_1/imports/new/pipeline_skid_buffer_struct.sv:1]
+INFO: [Synth 8-6155] done synthesizing module 'pipeline_skid_buffer_struct__parameterized2' (0#1) [D:/Vivado_Project/116C_Honor/189_ooo_processor_top/189_ooo_processor_top.srcs/sources_1/imports/new/pipeline_skid_buffer_struct.sv:1]
+INFO: [Synth 8-6157] synthesizing module 'ALU_unit' [D:/Vivado_Project/116C_Honor/189_ooo_processor_top/189_ooo_processor_top.srcs/sources_1/imports/new/ALU.sv:3]
+INFO: [Synth 8-6155] done synthesizing module 'ALU_unit' (0#1) [D:/Vivado_Project/116C_Honor/189_ooo_processor_top/189_ooo_processor_top.srcs/sources_1/imports/new/ALU.sv:3]
+INFO: [Synth 8-6157] synthesizing module 'branch_unit' [D:/Vivado_Project/116C_Honor/189_ooo_processor_top/189_ooo_processor_top.srcs/sources_1/imports/new/branch_unit.sv:4]
+INFO: [Synth 8-6155] done synthesizing module 'branch_unit' (0#1) [D:/Vivado_Project/116C_Honor/189_ooo_processor_top/189_ooo_processor_top.srcs/sources_1/imports/new/branch_unit.sv:4]
+INFO: [Synth 8-6157] synthesizing module 'LSU_unit' [D:/Vivado_Project/116C_Honor/189_ooo_processor_top/189_ooo_processor_top.srcs/sources_1/imports/new/LSU.sv:5]
+INFO: [Synth 8-6155] done synthesizing module 'LSU_unit' (0#1) [D:/Vivado_Project/116C_Honor/189_ooo_processor_top/189_ooo_processor_top.srcs/sources_1/imports/new/LSU.sv:5]
+INFO: [Synth 8-6157] synthesizing module 'LSQ' [D:/Vivado_Project/116C_Honor/189_ooo_processor_top/189_ooo_processor_top.srcs/sources_1/new/LSQ.sv:9]
+	Parameter SQ_DEPTH bound to: 32'sb00000000000000000000000000001000 
+	Parameter ROB_ENTRIES bound to: 32'sb00000000000000000000000000010000 
+INFO: [Synth 8-6155] done synthesizing module 'LSQ' (0#1) [D:/Vivado_Project/116C_Honor/189_ooo_processor_top/189_ooo_processor_top.srcs/sources_1/new/LSQ.sv:9]
+INFO: [Synth 8-6157] synthesizing module 'data_memory' [D:/Vivado_Project/116C_Honor/189_ooo_processor_top/189_ooo_processor_top.srcs/sources_1/imports/new/data_memory.sv:4]
+	Parameter WORDS bound to: 32'sb00000000000000001000000000000000 
+INFO: [Synth 8-6155] done synthesizing module 'data_memory' (0#1) [D:/Vivado_Project/116C_Honor/189_ooo_processor_top/189_ooo_processor_top.srcs/sources_1/imports/new/data_memory.sv:4]
+INFO: [Synth 8-6155] done synthesizing module 'top' (0#1) [D:/Vivado_Project/116C_Honor/189_ooo_processor_top/189_ooo_processor_top.srcs/sources_1/imports/new/top.sv:4]
+WARNING: [Synth 8-6014] Unused sequential element update_tag_reg was removed.  [D:/Vivado_Project/116C_Honor/189_ooo_processor_top/189_ooo_processor_top.srcs/sources_1/new/branch_predictor.sv:104]
+WARNING: [Synth 8-6014] Unused sequential element do_alloc_reg was removed.  [D:/Vivado_Project/116C_Honor/189_ooo_processor_top/189_ooo_processor_top.srcs/sources_1/new/branch_predictor.sv:108]
+WARNING: [Synth 8-6014] Unused sequential element upd_hit_reg was removed.  [D:/Vivado_Project/116C_Honor/189_ooo_processor_top/189_ooo_processor_top.srcs/sources_1/new/branch_predictor.sv:110]
+WARNING: [Synth 8-6014] Unused sequential element upd_idx_reg was removed.  [D:/Vivado_Project/116C_Honor/189_ooo_processor_top/189_ooo_processor_top.srcs/sources_1/new/branch_predictor.sv:111]
+WARNING: [Synth 8-6014] Unused sequential element found_free_reg was removed.  [D:/Vivado_Project/116C_Honor/189_ooo_processor_top/189_ooo_processor_top.srcs/sources_1/new/branch_predictor.sv:140]
+WARNING: [Synth 8-6014] Unused sequential element free_idx_reg was removed.  [D:/Vivado_Project/116C_Honor/189_ooo_processor_top/189_ooo_processor_top.srcs/sources_1/new/branch_predictor.sv:141]
+WARNING: [Synth 8-6014] Unused sequential element victim_found_reg was removed.  [D:/Vivado_Project/116C_Honor/189_ooo_processor_top/189_ooo_processor_top.srcs/sources_1/new/branch_predictor.sv:149]
+WARNING: [Synth 8-6014] Unused sequential element victim_idx_reg was removed.  [D:/Vivado_Project/116C_Honor/189_ooo_processor_top/189_ooo_processor_top.srcs/sources_1/new/branch_predictor.sv:150]
+WARNING: [Synth 8-6014] Unused sequential element alloc_idx_reg was removed.  [D:/Vivado_Project/116C_Honor/189_ooo_processor_top/189_ooo_processor_top.srcs/sources_1/new/branch_predictor.sv:162]
+WARNING: [Synth 8-6014] Unused sequential element rob_reg[0][is_branch] was removed.  [D:/Vivado_Project/116C_Honor/189_ooo_processor_top/189_ooo_processor_top.srcs/sources_1/imports/new/ROB.sv:73]
+WARNING: [Synth 8-6014] Unused sequential element rob_reg[0][dst_prf_new] was removed.  [D:/Vivado_Project/116C_Honor/189_ooo_processor_top/189_ooo_processor_top.srcs/sources_1/imports/new/ROB.sv:73]
+WARNING: [Synth 8-6014] Unused sequential element rob_reg[0][rob_tag] was removed.  [D:/Vivado_Project/116C_Honor/189_ooo_processor_top/189_ooo_processor_top.srcs/sources_1/imports/new/ROB.sv:73]
+WARNING: [Synth 8-6014] Unused sequential element rob_reg[1][is_branch] was removed.  [D:/Vivado_Project/116C_Honor/189_ooo_processor_top/189_ooo_processor_top.srcs/sources_1/imports/new/ROB.sv:73]
+WARNING: [Synth 8-6014] Unused sequential element rob_reg[1][dst_prf_new] was removed.  [D:/Vivado_Project/116C_Honor/189_ooo_processor_top/189_ooo_processor_top.srcs/sources_1/imports/new/ROB.sv:73]
+WARNING: [Synth 8-6014] Unused sequential element rob_reg[1][rob_tag] was removed.  [D:/Vivado_Project/116C_Honor/189_ooo_processor_top/189_ooo_processor_top.srcs/sources_1/imports/new/ROB.sv:73]
+WARNING: [Synth 8-6014] Unused sequential element rob_reg[2][is_branch] was removed.  [D:/Vivado_Project/116C_Honor/189_ooo_processor_top/189_ooo_processor_top.srcs/sources_1/imports/new/ROB.sv:73]
+WARNING: [Synth 8-6014] Unused sequential element rob_reg[2][dst_prf_new] was removed.  [D:/Vivado_Project/116C_Honor/189_ooo_processor_top/189_ooo_processor_top.srcs/sources_1/imports/new/ROB.sv:73]
+WARNING: [Synth 8-6014] Unused sequential element rob_reg[2][rob_tag] was removed.  [D:/Vivado_Project/116C_Honor/189_ooo_processor_top/189_ooo_processor_top.srcs/sources_1/imports/new/ROB.sv:73]
+WARNING: [Synth 8-6014] Unused sequential element rob_reg[3][is_branch] was removed.  [D:/Vivado_Project/116C_Honor/189_ooo_processor_top/189_ooo_processor_top.srcs/sources_1/imports/new/ROB.sv:73]
+WARNING: [Synth 8-6014] Unused sequential element rob_reg[3][dst_prf_new] was removed.  [D:/Vivado_Project/116C_Honor/189_ooo_processor_top/189_ooo_processor_top.srcs/sources_1/imports/new/ROB.sv:73]
+WARNING: [Synth 8-6014] Unused sequential element rob_reg[3][rob_tag] was removed.  [D:/Vivado_Project/116C_Honor/189_ooo_processor_top/189_ooo_processor_top.srcs/sources_1/imports/new/ROB.sv:73]
+WARNING: [Synth 8-6014] Unused sequential element rob_reg[4][is_branch] was removed.  [D:/Vivado_Project/116C_Honor/189_ooo_processor_top/189_ooo_processor_top.srcs/sources_1/imports/new/ROB.sv:73]
+WARNING: [Synth 8-6014] Unused sequential element rob_reg[4][dst_prf_new] was removed.  [D:/Vivado_Project/116C_Honor/189_ooo_processor_top/189_ooo_processor_top.srcs/sources_1/imports/new/ROB.sv:73]
+WARNING: [Synth 8-6014] Unused sequential element rob_reg[4][rob_tag] was removed.  [D:/Vivado_Project/116C_Honor/189_ooo_processor_top/189_ooo_processor_top.srcs/sources_1/imports/new/ROB.sv:73]
+WARNING: [Synth 8-6014] Unused sequential element rob_reg[5][is_branch] was removed.  [D:/Vivado_Project/116C_Honor/189_ooo_processor_top/189_ooo_processor_top.srcs/sources_1/imports/new/ROB.sv:73]
+WARNING: [Synth 8-6014] Unused sequential element rob_reg[5][dst_prf_new] was removed.  [D:/Vivado_Project/116C_Honor/189_ooo_processor_top/189_ooo_processor_top.srcs/sources_1/imports/new/ROB.sv:73]
+WARNING: [Synth 8-6014] Unused sequential element rob_reg[5][rob_tag] was removed.  [D:/Vivado_Project/116C_Honor/189_ooo_processor_top/189_ooo_processor_top.srcs/sources_1/imports/new/ROB.sv:73]
+WARNING: [Synth 8-6014] Unused sequential element rob_reg[6][is_branch] was removed.  [D:/Vivado_Project/116C_Honor/189_ooo_processor_top/189_ooo_processor_top.srcs/sources_1/imports/new/ROB.sv:73]
+WARNING: [Synth 8-6014] Unused sequential element rob_reg[6][dst_prf_new] was removed.  [D:/Vivado_Project/116C_Honor/189_ooo_processor_top/189_ooo_processor_top.srcs/sources_1/imports/new/ROB.sv:73]
+WARNING: [Synth 8-6014] Unused sequential element rob_reg[6][rob_tag] was removed.  [D:/Vivado_Project/116C_Honor/189_ooo_processor_top/189_ooo_processor_top.srcs/sources_1/imports/new/ROB.sv:73]
+WARNING: [Synth 8-6014] Unused sequential element rob_reg[7][is_branch] was removed.  [D:/Vivado_Project/116C_Honor/189_ooo_processor_top/189_ooo_processor_top.srcs/sources_1/imports/new/ROB.sv:73]
+WARNING: [Synth 8-6014] Unused sequential element rob_reg[7][dst_prf_new] was removed.  [D:/Vivado_Project/116C_Honor/189_ooo_processor_top/189_ooo_processor_top.srcs/sources_1/imports/new/ROB.sv:73]
+WARNING: [Synth 8-6014] Unused sequential element rob_reg[7][rob_tag] was removed.  [D:/Vivado_Project/116C_Honor/189_ooo_processor_top/189_ooo_processor_top.srcs/sources_1/imports/new/ROB.sv:73]
+WARNING: [Synth 8-6014] Unused sequential element rob_reg[8][is_branch] was removed.  [D:/Vivado_Project/116C_Honor/189_ooo_processor_top/189_ooo_processor_top.srcs/sources_1/imports/new/ROB.sv:73]
+WARNING: [Synth 8-6014] Unused sequential element rob_reg[8][dst_prf_new] was removed.  [D:/Vivado_Project/116C_Honor/189_ooo_processor_top/189_ooo_processor_top.srcs/sources_1/imports/new/ROB.sv:73]
+WARNING: [Synth 8-6014] Unused sequential element rob_reg[8][rob_tag] was removed.  [D:/Vivado_Project/116C_Honor/189_ooo_processor_top/189_ooo_processor_top.srcs/sources_1/imports/new/ROB.sv:73]
+WARNING: [Synth 8-6014] Unused sequential element rob_reg[9][is_branch] was removed.  [D:/Vivado_Project/116C_Honor/189_ooo_processor_top/189_ooo_processor_top.srcs/sources_1/imports/new/ROB.sv:73]
+WARNING: [Synth 8-6014] Unused sequential element rob_reg[9][dst_prf_new] was removed.  [D:/Vivado_Project/116C_Honor/189_ooo_processor_top/189_ooo_processor_top.srcs/sources_1/imports/new/ROB.sv:73]
+WARNING: [Synth 8-6014] Unused sequential element rob_reg[9][rob_tag] was removed.  [D:/Vivado_Project/116C_Honor/189_ooo_processor_top/189_ooo_processor_top.srcs/sources_1/imports/new/ROB.sv:73]
+WARNING: [Synth 8-6014] Unused sequential element rob_reg[10][is_branch] was removed.  [D:/Vivado_Project/116C_Honor/189_ooo_processor_top/189_ooo_processor_top.srcs/sources_1/imports/new/ROB.sv:73]
+WARNING: [Synth 8-6014] Unused sequential element rob_reg[10][dst_prf_new] was removed.  [D:/Vivado_Project/116C_Honor/189_ooo_processor_top/189_ooo_processor_top.srcs/sources_1/imports/new/ROB.sv:73]
+WARNING: [Synth 8-6014] Unused sequential element rob_reg[10][rob_tag] was removed.  [D:/Vivado_Project/116C_Honor/189_ooo_processor_top/189_ooo_processor_top.srcs/sources_1/imports/new/ROB.sv:73]
+WARNING: [Synth 8-6014] Unused sequential element rob_reg[11][is_branch] was removed.  [D:/Vivado_Project/116C_Honor/189_ooo_processor_top/189_ooo_processor_top.srcs/sources_1/imports/new/ROB.sv:73]
+WARNING: [Synth 8-6014] Unused sequential element rob_reg[11][dst_prf_new] was removed.  [D:/Vivado_Project/116C_Honor/189_ooo_processor_top/189_ooo_processor_top.srcs/sources_1/imports/new/ROB.sv:73]
+WARNING: [Synth 8-6014] Unused sequential element rob_reg[11][rob_tag] was removed.  [D:/Vivado_Project/116C_Honor/189_ooo_processor_top/189_ooo_processor_top.srcs/sources_1/imports/new/ROB.sv:73]
+WARNING: [Synth 8-6014] Unused sequential element rob_reg[12][is_branch] was removed.  [D:/Vivado_Project/116C_Honor/189_ooo_processor_top/189_ooo_processor_top.srcs/sources_1/imports/new/ROB.sv:73]
+WARNING: [Synth 8-6014] Unused sequential element rob_reg[12][dst_prf_new] was removed.  [D:/Vivado_Project/116C_Honor/189_ooo_processor_top/189_ooo_processor_top.srcs/sources_1/imports/new/ROB.sv:73]
+WARNING: [Synth 8-6014] Unused sequential element rob_reg[12][rob_tag] was removed.  [D:/Vivado_Project/116C_Honor/189_ooo_processor_top/189_ooo_processor_top.srcs/sources_1/imports/new/ROB.sv:73]
+WARNING: [Synth 8-6014] Unused sequential element rob_reg[13][is_branch] was removed.  [D:/Vivado_Project/116C_Honor/189_ooo_processor_top/189_ooo_processor_top.srcs/sources_1/imports/new/ROB.sv:73]
+WARNING: [Synth 8-6014] Unused sequential element rob_reg[13][dst_prf_new] was removed.  [D:/Vivado_Project/116C_Honor/189_ooo_processor_top/189_ooo_processor_top.srcs/sources_1/imports/new/ROB.sv:73]
+WARNING: [Synth 8-6014] Unused sequential element rob_reg[13][rob_tag] was removed.  [D:/Vivado_Project/116C_Honor/189_ooo_processor_top/189_ooo_processor_top.srcs/sources_1/imports/new/ROB.sv:73]
+WARNING: [Synth 8-6014] Unused sequential element rob_reg[14][is_branch] was removed.  [D:/Vivado_Project/116C_Honor/189_ooo_processor_top/189_ooo_processor_top.srcs/sources_1/imports/new/ROB.sv:73]
+WARNING: [Synth 8-6014] Unused sequential element rob_reg[14][dst_prf_new] was removed.  [D:/Vivado_Project/116C_Honor/189_ooo_processor_top/189_ooo_processor_top.srcs/sources_1/imports/new/ROB.sv:73]
+WARNING: [Synth 8-6014] Unused sequential element rob_reg[14][rob_tag] was removed.  [D:/Vivado_Project/116C_Honor/189_ooo_processor_top/189_ooo_processor_top.srcs/sources_1/imports/new/ROB.sv:73]
+WARNING: [Synth 8-6014] Unused sequential element rob_reg[15][is_branch] was removed.  [D:/Vivado_Project/116C_Honor/189_ooo_processor_top/189_ooo_processor_top.srcs/sources_1/imports/new/ROB.sv:73]
+WARNING: [Synth 8-6014] Unused sequential element rob_reg[15][dst_prf_new] was removed.  [D:/Vivado_Project/116C_Honor/189_ooo_processor_top/189_ooo_processor_top.srcs/sources_1/imports/new/ROB.sv:73]
+WARNING: [Synth 8-6014] Unused sequential element rob_reg[15][rob_tag] was removed.  [D:/Vivado_Project/116C_Honor/189_ooo_processor_top/189_ooo_processor_top.srcs/sources_1/imports/new/ROB.sv:73]
+WARNING: [Synth 8-6014] Unused sequential element merged_word_reg was removed.  [D:/Vivado_Project/116C_Honor/189_ooo_processor_top/189_ooo_processor_top.srcs/sources_1/imports/new/LSU.sv:205]
+WARNING: [Synth 8-6014] Unused sequential element s1_is_store_reg was removed.  [D:/Vivado_Project/116C_Honor/189_ooo_processor_top/189_ooo_processor_top.srcs/sources_1/imports/new/LSU.sv:136]
+WARNING: [Synth 8-6014] Unused sequential element s2_is_store_reg was removed.  [D:/Vivado_Project/116C_Honor/189_ooo_processor_top/189_ooo_processor_top.srcs/sources_1/imports/new/LSU.sv:145]
+WARNING: [Synth 8-6014] Unused sequential element s3_is_store_reg was removed.  [D:/Vivado_Project/116C_Honor/189_ooo_processor_top/189_ooo_processor_top.srcs/sources_1/imports/new/LSU.sv:154]
+WARNING: [Synth 8-6014] Unused sequential element widx_reg was removed.  [D:/Vivado_Project/116C_Honor/189_ooo_processor_top/189_ooo_processor_top.srcs/sources_1/new/LSQ.sv:248]
+WARNING: [Synth 8-7129] Port raddr[1] in module data_memory is either unconnected or has no load
+WARNING: [Synth 8-7129] Port raddr[0] in module data_memory is either unconnected or has no load
+WARNING: [Synth 8-7129] Port waddr[31] in module data_memory is either unconnected or has no load
+WARNING: [Synth 8-7129] Port waddr[30] in module data_memory is either unconnected or has no load
+WARNING: [Synth 8-7129] Port waddr[29] in module data_memory is either unconnected or has no load
+WARNING: [Synth 8-7129] Port waddr[28] in module data_memory is either unconnected or has no load
+WARNING: [Synth 8-7129] Port waddr[27] in module data_memory is either unconnected or has no load
+WARNING: [Synth 8-7129] Port waddr[26] in module data_memory is either unconnected or has no load
+WARNING: [Synth 8-7129] Port waddr[25] in module data_memory is either unconnected or has no load
+WARNING: [Synth 8-7129] Port waddr[24] in module data_memory is either unconnected or has no load
+WARNING: [Synth 8-7129] Port waddr[23] in module data_memory is either unconnected or has no load
+WARNING: [Synth 8-7129] Port waddr[22] in module data_memory is either unconnected or has no load
+WARNING: [Synth 8-7129] Port waddr[21] in module data_memory is either unconnected or has no load
+WARNING: [Synth 8-7129] Port waddr[20] in module data_memory is either unconnected or has no load
+WARNING: [Synth 8-7129] Port waddr[19] in module data_memory is either unconnected or has no load
+WARNING: [Synth 8-7129] Port waddr[18] in module data_memory is either unconnected or has no load
+WARNING: [Synth 8-7129] Port waddr[17] in module data_memory is either unconnected or has no load
+WARNING: [Synth 8-7129] Port waddr[1] in module data_memory is either unconnected or has no load
+WARNING: [Synth 8-7129] Port waddr[0] in module data_memory is either unconnected or has no load
+WARNING: [Synth 8-7129] Port sq_write_addr_i[1] in module LSQ is either unconnected or has no load
+WARNING: [Synth 8-7129] Port sq_write_addr_i[0] in module LSQ is either unconnected or has no load
+WARNING: [Synth 8-7129] Port ld_fwd_addr_i[1] in module LSQ is either unconnected or has no load
+WARNING: [Synth 8-7129] Port ld_fwd_addr_i[0] in module LSQ is either unconnected or has no load
+WARNING: [Synth 8-7129] Port pkt_i[valid] in module LSU_unit is either unconnected or has no load
+WARNING: [Synth 8-7129] Port pkt_i[micro_op][6] in module LSU_unit is either unconnected or has no load
+WARNING: [Synth 8-7129] Port pkt_i[micro_op][5] in module LSU_unit is either unconnected or has no load
+WARNING: [Synth 8-7129] Port pkt_i[micro_op][4] in module LSU_unit is either unconnected or has no load
+WARNING: [Synth 8-7129] Port pkt_i[src0_prf][6] in module LSU_unit is either unconnected or has no load
+WARNING: [Synth 8-7129] Port pkt_i[src0_prf][5] in module LSU_unit is either unconnected or has no load
+WARNING: [Synth 8-7129] Port pkt_i[src0_prf][4] in module LSU_unit is either unconnected or has no load
+WARNING: [Synth 8-7129] Port pkt_i[src0_prf][3] in module LSU_unit is either unconnected or has no load
+WARNING: [Synth 8-7129] Port pkt_i[src0_prf][2] in module LSU_unit is either unconnected or has no load
+WARNING: [Synth 8-7129] Port pkt_i[src0_prf][1] in module LSU_unit is either unconnected or has no load
+WARNING: [Synth 8-7129] Port pkt_i[src0_prf][0] in module LSU_unit is either unconnected or has no load
+WARNING: [Synth 8-7129] Port pkt_i[src0_ready] in module LSU_unit is either unconnected or has no load
+WARNING: [Synth 8-7129] Port pkt_i[src1_prf][6] in module LSU_unit is either unconnected or has no load
+WARNING: [Synth 8-7129] Port pkt_i[src1_prf][5] in module LSU_unit is either unconnected or has no load
+WARNING: [Synth 8-7129] Port pkt_i[src1_prf][4] in module LSU_unit is either unconnected or has no load
+WARNING: [Synth 8-7129] Port pkt_i[src1_prf][3] in module LSU_unit is either unconnected or has no load
+WARNING: [Synth 8-7129] Port pkt_i[src1_prf][2] in module LSU_unit is either unconnected or has no load
+WARNING: [Synth 8-7129] Port pkt_i[src1_prf][1] in module LSU_unit is either unconnected or has no load
+WARNING: [Synth 8-7129] Port pkt_i[src1_prf][0] in module LSU_unit is either unconnected or has no load
+WARNING: [Synth 8-7129] Port pkt_i[src1_ready] in module LSU_unit is either unconnected or has no load
+WARNING: [Synth 8-7129] Port pkt_i[fu][1] in module LSU_unit is either unconnected or has no load
+WARNING: [Synth 8-7129] Port pkt_i[fu][0] in module LSU_unit is either unconnected or has no load
+WARNING: [Synth 8-7129] Port pkt_i[pc][31] in module LSU_unit is either unconnected or has no load
+WARNING: [Synth 8-7129] Port pkt_i[pc][30] in module LSU_unit is either unconnected or has no load
+WARNING: [Synth 8-7129] Port pkt_i[pc][29] in module LSU_unit is either unconnected or has no load
+WARNING: [Synth 8-7129] Port pkt_i[pc][28] in module LSU_unit is either unconnected or has no load
+WARNING: [Synth 8-7129] Port pkt_i[pc][27] in module LSU_unit is either unconnected or has no load
+WARNING: [Synth 8-7129] Port pkt_i[pc][26] in module LSU_unit is either unconnected or has no load
+WARNING: [Synth 8-7129] Port pkt_i[pc][25] in module LSU_unit is either unconnected or has no load
+WARNING: [Synth 8-7129] Port pkt_i[pc][24] in module LSU_unit is either unconnected or has no load
+WARNING: [Synth 8-7129] Port pkt_i[pc][23] in module LSU_unit is either unconnected or has no load
+WARNING: [Synth 8-7129] Port pkt_i[pc][22] in module LSU_unit is either unconnected or has no load
+WARNING: [Synth 8-7129] Port pkt_i[pc][21] in module LSU_unit is either unconnected or has no load
+WARNING: [Synth 8-7129] Port pkt_i[pc][20] in module LSU_unit is either unconnected or has no load
+WARNING: [Synth 8-7129] Port pkt_i[pc][19] in module LSU_unit is either unconnected or has no load
+WARNING: [Synth 8-7129] Port pkt_i[pc][18] in module LSU_unit is either unconnected or has no load
+WARNING: [Synth 8-7129] Port pkt_i[pc][17] in module LSU_unit is either unconnected or has no load
+WARNING: [Synth 8-7129] Port pkt_i[pc][16] in module LSU_unit is either unconnected or has no load
+WARNING: [Synth 8-7129] Port pkt_i[pc][15] in module LSU_unit is either unconnected or has no load
+WARNING: [Synth 8-7129] Port pkt_i[pc][14] in module LSU_unit is either unconnected or has no load
+WARNING: [Synth 8-7129] Port pkt_i[pc][13] in module LSU_unit is either unconnected or has no load
+WARNING: [Synth 8-7129] Port pkt_i[pc][12] in module LSU_unit is either unconnected or has no load
+WARNING: [Synth 8-7129] Port pkt_i[pc][11] in module LSU_unit is either unconnected or has no load
+WARNING: [Synth 8-7129] Port pkt_i[pc][10] in module LSU_unit is either unconnected or has no load
+WARNING: [Synth 8-7129] Port pkt_i[pc][9] in module LSU_unit is either unconnected or has no load
+WARNING: [Synth 8-7129] Port pkt_i[pc][8] in module LSU_unit is either unconnected or has no load
+WARNING: [Synth 8-7129] Port pkt_i[pc][7] in module LSU_unit is either unconnected or has no load
+WARNING: [Synth 8-7129] Port pkt_i[pc][6] in module LSU_unit is either unconnected or has no load
+WARNING: [Synth 8-7129] Port pkt_i[pc][5] in module LSU_unit is either unconnected or has no load
+WARNING: [Synth 8-7129] Port pkt_i[pc][4] in module LSU_unit is either unconnected or has no load
+WARNING: [Synth 8-7129] Port pkt_i[pc][3] in module LSU_unit is either unconnected or has no load
+WARNING: [Synth 8-7129] Port pkt_i[pc][2] in module LSU_unit is either unconnected or has no load
+WARNING: [Synth 8-7129] Port pkt_i[pc][1] in module LSU_unit is either unconnected or has no load
+WARNING: [Synth 8-7129] Port pkt_i[pc][0] in module LSU_unit is either unconnected or has no load
+WARNING: [Synth 8-7129] Port pkt_i[pred_hit] in module LSU_unit is either unconnected or has no load
+WARNING: [Synth 8-7129] Port pkt_i[pred_taken] in module LSU_unit is either unconnected or has no load
+WARNING: [Synth 8-7129] Port pkt_i[pred_target][31] in module LSU_unit is either unconnected or has no load
+WARNING: [Synth 8-7129] Port pkt_i[pred_target][30] in module LSU_unit is either unconnected or has no load
+WARNING: [Synth 8-7129] Port pkt_i[pred_target][29] in module LSU_unit is either unconnected or has no load
+WARNING: [Synth 8-7129] Port pkt_i[pred_target][28] in module LSU_unit is either unconnected or has no load
+WARNING: [Synth 8-7129] Port pkt_i[pred_target][27] in module LSU_unit is either unconnected or has no load
+WARNING: [Synth 8-7129] Port pkt_i[pred_target][26] in module LSU_unit is either unconnected or has no load
+WARNING: [Synth 8-7129] Port pkt_i[pred_target][25] in module LSU_unit is either unconnected or has no load
+WARNING: [Synth 8-7129] Port pkt_i[pred_target][24] in module LSU_unit is either unconnected or has no load
+WARNING: [Synth 8-7129] Port pkt_i[pred_target][23] in module LSU_unit is either unconnected or has no load
+WARNING: [Synth 8-7129] Port pkt_i[pred_target][22] in module LSU_unit is either unconnected or has no load
+WARNING: [Synth 8-7129] Port pkt_i[pred_target][21] in module LSU_unit is either unconnected or has no load
+WARNING: [Synth 8-7129] Port pkt_i[pred_target][20] in module LSU_unit is either unconnected or has no load
+WARNING: [Synth 8-7129] Port pkt_i[pred_target][19] in module LSU_unit is either unconnected or has no load
+WARNING: [Synth 8-7129] Port pkt_i[pred_target][18] in module LSU_unit is either unconnected or has no load
+WARNING: [Synth 8-7129] Port pkt_i[pred_target][17] in module LSU_unit is either unconnected or has no load
+WARNING: [Synth 8-7129] Port pkt_i[pred_target][16] in module LSU_unit is either unconnected or has no load
+WARNING: [Synth 8-7129] Port pkt_i[pred_target][15] in module LSU_unit is either unconnected or has no load
+WARNING: [Synth 8-7129] Port pkt_i[pred_target][14] in module LSU_unit is either unconnected or has no load
+WARNING: [Synth 8-7129] Port pkt_i[pred_target][13] in module LSU_unit is either unconnected or has no load
+WARNING: [Synth 8-7129] Port pkt_i[pred_target][12] in module LSU_unit is either unconnected or has no load
+WARNING: [Synth 8-7129] Port pkt_i[pred_target][11] in module LSU_unit is either unconnected or has no load
+INFO: [Common 17-14] Message 'Synth 8-7129' appears 100 times and further instances of the messages will be disabled. Use the Tcl command set_msg_config to change the current settings.
+---------------------------------------------------------------------------------
+Finished RTL Elaboration : Time (s): cpu = 00:00:09 ; elapsed = 00:00:10 . Memory (MB): peak = 1632.355 ; gain = 893.594
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start Handling Custom Attributes
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Finished Handling Custom Attributes : Time (s): cpu = 00:00:09 ; elapsed = 00:00:10 . Memory (MB): peak = 1632.355 ; gain = 893.594
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Finished RTL Optimization Phase 1 : Time (s): cpu = 00:00:09 ; elapsed = 00:00:10 . Memory (MB): peak = 1632.355 ; gain = 893.594
+---------------------------------------------------------------------------------
+Netlist sorting complete. Time (s): cpu = 00:00:00 ; elapsed = 00:00:00.236 . Memory (MB): peak = 1632.355 ; gain = 0.000
+INFO: [Project 1-570] Preparing netlist for logic optimization
+
+Processing XDC Constraints
+Initializing timing engine
+Parsing XDC File [D:/Vivado_Project/116C_Honor/189_ooo_processor_top/189_ooo_processor_top.srcs/constrs_1/new/top.xdc]
+Finished Parsing XDC File [D:/Vivado_Project/116C_Honor/189_ooo_processor_top/189_ooo_processor_top.srcs/constrs_1/new/top.xdc]
+INFO: [Project 1-236] Implementation specific constraints were found while reading constraint file [D:/Vivado_Project/116C_Honor/189_ooo_processor_top/189_ooo_processor_top.srcs/constrs_1/new/top.xdc]. These constraints will be ignored for synthesis but will be used in implementation. Impacted constraints are listed in the file [.Xil/top_propImpl.xdc].
+Resolution: To avoid this warning, move constraints listed in [.Xil/top_propImpl.xdc] to another XDC file and exclude this new file from synthesis with the used_in_synthesis property (File Properties dialog in GUI) and re-run elaboration/synthesis.
+Parsing XDC File [D:/Vivado_Project/116C_Honor/189_ooo_processor_top/189_ooo_processor_top.srcs/constrs_1/imports/board_files/PYNQ-Z2 v1.0.xdc]
+Finished Parsing XDC File [D:/Vivado_Project/116C_Honor/189_ooo_processor_top/189_ooo_processor_top.srcs/constrs_1/imports/board_files/PYNQ-Z2 v1.0.xdc]
+Completed Processing XDC Constraints
+
+Netlist sorting complete. Time (s): cpu = 00:00:00 ; elapsed = 00:00:00.011 . Memory (MB): peak = 1720.180 ; gain = 0.000
+INFO: [Project 1-111] Unisim Transformation Summary:
+No Unisim elements were transformed.
+
+Constraint Validation Runtime : Time (s): cpu = 00:00:00 ; elapsed = 00:00:00.066 . Memory (MB): peak = 1720.180 ; gain = 0.000
+---------------------------------------------------------------------------------
+Finished Constraint Validation : Time (s): cpu = 00:00:19 ; elapsed = 00:00:20 . Memory (MB): peak = 1720.180 ; gain = 981.418
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start Loading Part and Timing Information
+---------------------------------------------------------------------------------
+Loading part: xc7z020clg400-1
+---------------------------------------------------------------------------------
+Finished Loading Part and Timing Information : Time (s): cpu = 00:00:19 ; elapsed = 00:00:20 . Memory (MB): peak = 1720.180 ; gain = 981.418
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start Applying 'set_property' XDC Constraints
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Finished applying 'set_property' XDC Constraints : Time (s): cpu = 00:00:19 ; elapsed = 00:00:20 . Memory (MB): peak = 1720.180 ; gain = 981.418
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start Preparing Guide Design
+---------------------------------------------------------------------------------
+WARNING: [Synth 8-6702] IncrSynth : Design change found in an area of the design that prevents previous synthesis information being used, Reverting to default synthesis
+---------------------------------------------------------------------------------
+Finished Doing Graph Differ : Time (s): cpu = 00:00:21 ; elapsed = 00:00:23 . Memory (MB): peak = 1720.180 ; gain = 981.418
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Finished Preparing Guide Design : Time (s): cpu = 00:00:21 ; elapsed = 00:00:23 . Memory (MB): peak = 1720.180 ; gain = 981.418
+---------------------------------------------------------------------------------
+WARNING: [Synth 8-3936] Found unconnected internal register 'rd_addr_d0_reg' and it is trimmed from '30' to '15' bits. [D:/Vivado_Project/116C_Honor/189_ooo_processor_top/189_ooo_processor_top.srcs/sources_1/imports/new/data_memory.sv:46]
+WARNING: [Synth 8-6841] Block RAM (mem_reg) originally specified as a Byte Wide Write Enable RAM cannot take advantage of ByteWide feature and is implemented with single write enable per RAM due to following reason.
+(address width (15) is more than optimal threshold of 12. Implementing using BWWE will require more logic and timing would be suboptimal. Please use attribute ram_decomp = power if BWWE is desired.)
+---------------------------------------------------------------------------------
+Finished RTL Optimization Phase 2 : Time (s): cpu = 00:00:29 ; elapsed = 00:00:32 . Memory (MB): peak = 1720.180 ; gain = 981.418
+---------------------------------------------------------------------------------
+
+
+Incremental Synthesis Report Summary:
+
+1. Incremental synthesis run: no
+
+   Reason for not running incremental synthesis : Design change found in an area of the design that prevents previous synthesis information being used
+
+
+INFO: [Synth 8-7130] Flow is switching to default flow due to incremental criteria not met. If you would like to alter this behaviour and have the flow terminate instead, please set the following parameter config_implementation {autoIncr.Synth.RejectBehavior Terminate}
+---------------------------------------------------------------------------------
+Start RTL Component Statistics 
+---------------------------------------------------------------------------------
+Detailed RTL Component Info : 
++---Adders : 
+	   2 Input   32 Bit       Adders := 6     
+	   3 Input   32 Bit       Adders := 1     
+	   2 Input    8 Bit       Adders := 2     
+	   3 Input    4 Bit       Adders := 35    
+	   2 Input    4 Bit       Adders := 6     
+	   6 Input    4 Bit       Adders := 1     
+	   7 Input    4 Bit       Adders := 1     
+	   2 Input    3 Bit       Adders := 8     
+	   2 Input    2 Bit       Adders := 2     
++---Registers : 
+	              128 Bit    Registers := 1     
+	               98 Bit    Registers := 2     
+	               32 Bit    Registers := 260   
+	               30 Bit    Registers := 16    
+	                8 Bit    Registers := 34    
+	                7 Bit    Registers := 784   
+	                5 Bit    Registers := 6     
+	                4 Bit    Registers := 75    
+	                3 Bit    Registers := 17    
+	                2 Bit    Registers := 43    
+	                1 Bit    Registers := 309   
++---RAMs : 
+	            1024K Bit	(32768 X 32 bit)          RAMs := 1     
++---Muxes : 
+	   2 Input  128 Bit        Muxes := 8     
+	   2 Input   98 Bit        Muxes := 1     
+	   2 Input   32 Bit        Muxes := 373   
+	   4 Input   32 Bit        Muxes := 9     
+	   2 Input   30 Bit        Muxes := 48    
+	   2 Input    8 Bit        Muxes := 42    
+	   4 Input    8 Bit        Muxes := 1     
+	   2 Input    7 Bit        Muxes := 103   
+	   4 Input    7 Bit        Muxes := 13    
+	   2 Input    5 Bit        Muxes := 3     
+	   2 Input    4 Bit        Muxes := 176   
+	   3 Input    4 Bit        Muxes := 4     
+	   4 Input    4 Bit        Muxes := 3     
+	   2 Input    3 Bit        Muxes := 2     
+	   4 Input    3 Bit        Muxes := 1     
+	   7 Input    3 Bit        Muxes := 1     
+	   2 Input    2 Bit        Muxes := 14    
+	   4 Input    2 Bit        Muxes := 3     
+	   2 Input    1 Bit        Muxes := 1807  
+	   4 Input    1 Bit        Muxes := 10    
+	   3 Input    1 Bit        Muxes := 2     
+---------------------------------------------------------------------------------
+Finished RTL Component Statistics 
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start Part Resource Summary
+---------------------------------------------------------------------------------
+Part Resources:
+DSPs: 220 (col length:60)
+BRAMs: 280 (col length: RAMB18 60 RAMB36 30)
+---------------------------------------------------------------------------------
+Finished Part Resource Summary
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start Cross Boundary and Area Optimization
+---------------------------------------------------------------------------------
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (u_rs_lsu/\slots_reg[7][pkt][fu][0] )
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (u_rs_lsu/\slots_reg[6][pkt][fu][0] )
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (u_rs_lsu/\slots_reg[5][pkt][fu][0] )
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (u_rs_lsu/\slots_reg[4][pkt][fu][0] )
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (u_rs_lsu/\slots_reg[3][pkt][fu][0] )
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (u_rs_lsu/\slots_reg[2][pkt][fu][0] )
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (u_rs_lsu/\slots_reg[1][pkt][fu][0] )
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (u_rs_lsu/\slots_reg[0][pkt][fu][0] )
+INFO: [Synth 8-3886] merging instance 'u_rs_lsu/slots_reg[7][pkt][src1_ready]' (FDCE) to 'u_rs_lsu/slots_reg[7][pkt][src0_ready]'
+INFO: [Synth 8-3886] merging instance 'u_rs_lsu/slots_reg[6][pkt][src1_ready]' (FDCE) to 'u_rs_lsu/slots_reg[6][pkt][src0_ready]'
+INFO: [Synth 8-3886] merging instance 'u_rs_lsu/slots_reg[5][pkt][src1_ready]' (FDCE) to 'u_rs_lsu/slots_reg[5][pkt][src0_ready]'
+INFO: [Synth 8-3886] merging instance 'u_rs_lsu/slots_reg[4][pkt][src1_ready]' (FDCE) to 'u_rs_lsu/slots_reg[4][pkt][src0_ready]'
+INFO: [Synth 8-3886] merging instance 'u_rs_lsu/slots_reg[3][pkt][src1_ready]' (FDCE) to 'u_rs_lsu/slots_reg[3][pkt][src0_ready]'
+INFO: [Synth 8-3886] merging instance 'u_rs_lsu/slots_reg[2][pkt][src1_ready]' (FDCE) to 'u_rs_lsu/slots_reg[2][pkt][src0_ready]'
+INFO: [Synth 8-3886] merging instance 'u_rs_lsu/slots_reg[1][pkt][src1_ready]' (FDCE) to 'u_rs_lsu/slots_reg[1][pkt][src0_ready]'
+INFO: [Synth 8-3886] merging instance 'u_rs_lsu/slots_reg[0][pkt][src1_ready]' (FDCE) to 'u_rs_lsu/slots_reg[0][pkt][src0_ready]'
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (u_rs_lsu/\slots_reg[7][pkt][src0_ready] )
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (u_rs_lsu/\slots_reg[6][pkt][src0_ready] )
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (u_rs_lsu/\slots_reg[5][pkt][src0_ready] )
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (u_rs_lsu/\slots_reg[4][pkt][src0_ready] )
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (u_rs_lsu/\slots_reg[3][pkt][src0_ready] )
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (u_rs_lsu/\slots_reg[2][pkt][src0_ready] )
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (u_rs_lsu/\slots_reg[1][pkt][src0_ready] )
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (u_rs_lsu/\slots_reg[0][pkt][src0_ready] )
+INFO: [Synth 8-3886] merging instance 'u_rs_br/slots_reg[7][pkt][src1_ready]' (FDCE) to 'u_rs_br/slots_reg[7][pkt][src0_ready]'
+INFO: [Synth 8-3886] merging instance 'u_rs_br/slots_reg[6][pkt][src1_ready]' (FDCE) to 'u_rs_br/slots_reg[6][pkt][src0_ready]'
+INFO: [Synth 8-3886] merging instance 'u_rs_br/slots_reg[5][pkt][src1_ready]' (FDCE) to 'u_rs_br/slots_reg[5][pkt][src0_ready]'
+INFO: [Synth 8-3886] merging instance 'u_rs_br/slots_reg[4][pkt][src1_ready]' (FDCE) to 'u_rs_br/slots_reg[4][pkt][src0_ready]'
+INFO: [Synth 8-3886] merging instance 'u_rs_br/slots_reg[3][pkt][src1_ready]' (FDCE) to 'u_rs_br/slots_reg[3][pkt][src0_ready]'
+INFO: [Synth 8-3886] merging instance 'u_rs_br/slots_reg[2][pkt][src1_ready]' (FDCE) to 'u_rs_br/slots_reg[2][pkt][src0_ready]'
+INFO: [Synth 8-3886] merging instance 'u_rs_br/slots_reg[1][pkt][src1_ready]' (FDCE) to 'u_rs_br/slots_reg[1][pkt][src0_ready]'
+INFO: [Synth 8-3886] merging instance 'u_rs_br/slots_reg[0][pkt][src1_ready]' (FDCE) to 'u_rs_br/slots_reg[0][pkt][src0_ready]'
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (u_rs_br/\slots_reg[7][pkt][src0_ready] )
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (u_rs_br/\slots_reg[6][pkt][src0_ready] )
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (u_rs_br/\slots_reg[5][pkt][src0_ready] )
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (u_rs_br/\slots_reg[4][pkt][src0_ready] )
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (u_rs_br/\slots_reg[3][pkt][src0_ready] )
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (u_rs_br/\slots_reg[2][pkt][src0_ready] )
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (u_rs_br/\slots_reg[1][pkt][src0_ready] )
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (u_rs_br/\slots_reg[0][pkt][src0_ready] )
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (u_rs_alu/\slots_reg[7][pkt][fu][0] )
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (u_rs_alu/\slots_reg[6][pkt][fu][0] )
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (u_rs_alu/\slots_reg[5][pkt][fu][0] )
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (u_rs_alu/\slots_reg[4][pkt][fu][0] )
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (u_rs_alu/\slots_reg[3][pkt][fu][0] )
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (u_rs_alu/\slots_reg[2][pkt][fu][0] )
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (u_rs_alu/\slots_reg[1][pkt][fu][0] )
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (u_rs_alu/\slots_reg[0][pkt][fu][0] )
+INFO: [Synth 8-3886] merging instance 'u_rs_alu/slots_reg[7][pkt][src1_ready]' (FDCE) to 'u_rs_alu/slots_reg[7][pkt][src0_ready]'
+INFO: [Synth 8-3886] merging instance 'u_rs_alu/slots_reg[6][pkt][src1_ready]' (FDCE) to 'u_rs_alu/slots_reg[6][pkt][src0_ready]'
+INFO: [Synth 8-3886] merging instance 'u_rs_alu/slots_reg[5][pkt][src1_ready]' (FDCE) to 'u_rs_alu/slots_reg[5][pkt][src0_ready]'
+INFO: [Synth 8-3886] merging instance 'u_rs_alu/slots_reg[4][pkt][src1_ready]' (FDCE) to 'u_rs_alu/slots_reg[4][pkt][src0_ready]'
+INFO: [Synth 8-3886] merging instance 'u_rs_alu/slots_reg[3][pkt][src1_ready]' (FDCE) to 'u_rs_alu/slots_reg[3][pkt][src0_ready]'
+INFO: [Synth 8-3886] merging instance 'u_rs_alu/slots_reg[2][pkt][src1_ready]' (FDCE) to 'u_rs_alu/slots_reg[2][pkt][src0_ready]'
+INFO: [Synth 8-3886] merging instance 'u_rs_alu/slots_reg[1][pkt][src1_ready]' (FDCE) to 'u_rs_alu/slots_reg[1][pkt][src0_ready]'
+INFO: [Synth 8-3886] merging instance 'u_rs_alu/slots_reg[0][pkt][src1_ready]' (FDCE) to 'u_rs_alu/slots_reg[0][pkt][src0_ready]'
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (u_rs_alu/\slots_reg[7][pkt][src0_ready] )
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (u_rs_alu/\slots_reg[6][pkt][src0_ready] )
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (u_rs_alu/\slots_reg[5][pkt][src0_ready] )
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (u_rs_alu/\slots_reg[4][pkt][src0_ready] )
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (u_rs_alu/\slots_reg[3][pkt][src0_ready] )
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (u_rs_alu/\slots_reg[2][pkt][src0_ready] )
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (u_rs_alu/\slots_reg[1][pkt][src0_ready] )
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (u_rs_alu/\slots_reg[0][pkt][src0_ready] )
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (u_rs_br/\slots_reg[7][pkt][fu][1] )
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (u_rs_br/\slots_reg[6][pkt][fu][1] )
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (u_rs_br/\slots_reg[5][pkt][fu][1] )
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (u_rs_br/\slots_reg[4][pkt][fu][1] )
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (u_rs_br/\slots_reg[3][pkt][fu][1] )
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (u_rs_br/\slots_reg[2][pkt][fu][1] )
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (u_rs_br/\slots_reg[1][pkt][fu][1] )
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (u_rs_br/\slots_reg[0][pkt][fu][1] )
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (u_rs_alu/\slots_reg[7][pkt][fu][1] )
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (u_rs_alu/\slots_reg[6][pkt][fu][1] )
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (u_rs_alu/\slots_reg[5][pkt][fu][1] )
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (u_rs_alu/\slots_reg[4][pkt][fu][1] )
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (u_rs_alu/\slots_reg[3][pkt][fu][1] )
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (u_rs_alu/\slots_reg[2][pkt][fu][1] )
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (u_rs_alu/\slots_reg[1][pkt][fu][1] )
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (u_rs_alu/\slots_reg[0][pkt][fu][1] )
+INFO: [Synth 8-5546] ROM "get_control/ALUOp" won't be mapped to RAM because it is too sparse
+INFO: [Synth 8-5546] ROM "get_control/fu" won't be mapped to RAM because it is too sparse
+INFO: [Synth 8-5546] ROM "get_control/ALUOp" won't be mapped to RAM because it is too sparse
+INFO: [Synth 8-5546] ROM "get_control/fu" won't be mapped to RAM because it is too sparse
+INFO: [Common 17-14] Message 'Synth 8-7129' appears 100 times and further instances of the messages will be disabled. Use the Tcl command set_msg_config to change the current settings.
+WARNING: [Synth 8-6841] Block RAM (mem_reg) originally specified as a Byte Wide Write Enable RAM cannot take advantage of ByteWide feature and is implemented with single write enable per RAM due to following reason.
+(address width (15) is more than optimal threshold of 12. Implementing using BWWE will require more logic and timing would be suboptimal. Please use attribute ram_decomp = power if BWWE is desired.)
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (u_skid_dispatch_lsu/\data_skid_reg[pkt][dst_prf][0] )
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (u_skid_dispatch_lsu/\data_skid_reg[pkt][dst_prf][1] )
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (u_skid_dispatch_lsu/\data_skid_reg[pkt][dst_prf][2] )
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (u_skid_dispatch_lsu/\data_skid_reg[pkt][dst_prf][3] )
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (u_skid_dispatch_lsu/\data_skid_reg[pkt][dst_prf][4] )
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (u_skid_dispatch_lsu/\data_skid_reg[pkt][dst_prf][5] )
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (u_skid_dispatch_lsu/\data_skid_reg[pkt][dst_prf][6] )
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (u_skid_dispatch_lsu/\data_skid_reg[pkt][micro_op][2] )
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (u_skid_dispatch_lsu/\data_skid_reg[pkt][micro_op][0] )
+INFO: [Synth 8-3886] merging instance 'u_lsu/s1_addr_reg[0]' (FDC) to 'u_lsu/s1_byte_offset_reg[0]'
+INFO: [Synth 8-3886] merging instance 'u_lsu/s2_addr_reg[0]' (FDC) to 'u_lsu/s2_byte_offset_reg[0]'
+INFO: [Synth 8-3886] merging instance 'u_lsu/s3_addr_reg[0]' (FDC) to 'u_lsu/s3_byte_offset_reg[0]'
+INFO: [Synth 8-3886] merging instance 'u_lsu/s1_addr_reg[1]' (FDC) to 'u_lsu/s1_byte_offset_reg[1]'
+INFO: [Synth 8-3886] merging instance 'u_lsu/s2_addr_reg[1]' (FDC) to 'u_lsu/s2_byte_offset_reg[1]'
+INFO: [Synth 8-3886] merging instance 'u_lsu/s3_addr_reg[1]' (FDC) to 'u_lsu/s3_byte_offset_reg[1]'
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (u_skid_dispatch_lsu/\data_skid_reg[src1][0] )
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (u_skid_dispatch_lsu/\data_skid_reg[src1][16] )
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (u_skid_dispatch_lsu/\data_skid_reg[src1][1] )
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (u_skid_dispatch_lsu/\data_skid_reg[src1][17] )
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (u_skid_dispatch_lsu/\data_skid_reg[src1][2] )
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (u_skid_dispatch_lsu/\data_skid_reg[src1][18] )
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (u_skid_dispatch_lsu/\data_skid_reg[src1][3] )
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (u_skid_dispatch_lsu/\data_skid_reg[src1][19] )
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (u_skid_dispatch_lsu/\data_skid_reg[src1][4] )
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (u_skid_dispatch_lsu/\data_skid_reg[src1][20] )
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (u_skid_dispatch_lsu/\data_skid_reg[src1][5] )
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (u_skid_dispatch_lsu/\data_skid_reg[src1][21] )
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (u_skid_dispatch_lsu/\data_skid_reg[src1][6] )
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (u_skid_dispatch_lsu/\data_skid_reg[src1][22] )
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (u_skid_dispatch_lsu/\data_skid_reg[src1][7] )
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (u_skid_dispatch_lsu/\data_skid_reg[src1][23] )
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (u_skid_dispatch_lsu/\data_skid_reg[src1][8] )
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (u_skid_dispatch_lsu/\data_skid_reg[src1][24] )
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (u_skid_dispatch_lsu/\data_skid_reg[src1][9] )
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (u_skid_dispatch_lsu/\data_skid_reg[src1][25] )
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (u_skid_dispatch_lsu/\data_skid_reg[src1][10] )
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (u_skid_dispatch_lsu/\data_skid_reg[src1][26] )
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (u_skid_dispatch_lsu/\data_skid_reg[src1][11] )
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (u_skid_dispatch_lsu/\data_skid_reg[src1][27] )
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (u_skid_dispatch_lsu/\data_skid_reg[src1][12] )
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (u_skid_dispatch_lsu/\data_skid_reg[src1][28] )
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (u_skid_dispatch_lsu/\data_skid_reg[src1][13] )
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (u_skid_dispatch_lsu/\data_skid_reg[src1][29] )
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (u_skid_dispatch_lsu/\data_skid_reg[src1][14] )
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (u_skid_dispatch_lsu/\data_skid_reg[src1][30] )
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (u_skid_dispatch_lsu/\data_skid_reg[src1][15] )
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (u_skid_dispatch_lsu/\data_skid_reg[src1][31] )
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (u_skid_dispatch_lsu/\data_skid_reg[pkt][micro_op][3] )
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (u_skid_dispatch_lsu/\data_skid_reg[src0][31] )
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (u_skid_dispatch_lsu/\data_skid_reg[pkt][imm][31] )
+INFO: [Common 17-14] Message 'Synth 8-3333' appears 100 times and further instances of the messages will be disabled. Use the Tcl command set_msg_config to change the current settings.
+INFO: [Common 17-14] Message 'Synth 8-3333' appears 100 times and further instances of the messages will be disabled. Use the Tcl command set_msg_config to change the current settings.
+INFO: [Synth 8-3886] merging instance 'u_lsq/sq_reg[7][be][0]' (FDCE) to 'u_lsq/sq_reg[7][be][1]'
+INFO: [Synth 8-3886] merging instance 'u_lsq/sq_reg[6][be][0]' (FDCE) to 'u_lsq/sq_reg[6][be][1]'
+INFO: [Synth 8-3886] merging instance 'u_lsq/sq_reg[5][be][0]' (FDCE) to 'u_lsq/sq_reg[5][be][1]'
+INFO: [Synth 8-3886] merging instance 'u_lsq/sq_reg[4][be][0]' (FDCE) to 'u_lsq/sq_reg[4][be][1]'
+INFO: [Synth 8-3886] merging instance 'u_lsq/sq_reg[3][be][0]' (FDCE) to 'u_lsq/sq_reg[3][be][1]'
+INFO: [Synth 8-3886] merging instance 'u_lsq/sq_reg[2][be][0]' (FDCE) to 'u_lsq/sq_reg[2][be][1]'
+INFO: [Synth 8-3886] merging instance 'u_lsq/sq_reg[1][be][0]' (FDCE) to 'u_lsq/sq_reg[1][be][1]'
+INFO: [Synth 8-3886] merging instance 'u_lsq/sq_reg[0][be][0]' (FDCE) to 'u_lsq/sq_reg[0][be][1]'
+INFO: [Synth 8-3886] merging instance 'u_lsq/sq_reg[7][be][2]' (FDCE) to 'u_lsq/sq_reg[7][be][3]'
+INFO: [Synth 8-3886] merging instance 'u_lsq/sq_reg[6][be][2]' (FDCE) to 'u_lsq/sq_reg[6][be][3]'
+INFO: [Synth 8-3886] merging instance 'u_lsq/sq_reg[5][be][2]' (FDCE) to 'u_lsq/sq_reg[5][be][3]'
+INFO: [Synth 8-3886] merging instance 'u_lsq/sq_reg[4][be][2]' (FDCE) to 'u_lsq/sq_reg[4][be][3]'
+INFO: [Synth 8-3886] merging instance 'u_lsq/sq_reg[3][be][2]' (FDCE) to 'u_lsq/sq_reg[3][be][3]'
+INFO: [Synth 8-3886] merging instance 'u_lsq/sq_reg[2][be][2]' (FDCE) to 'u_lsq/sq_reg[2][be][3]'
+INFO: [Synth 8-3886] merging instance 'u_lsq/sq_reg[1][be][2]' (FDCE) to 'u_lsq/sq_reg[1][be][3]'
+INFO: [Synth 8-3886] merging instance 'u_lsq/sq_reg[0][be][2]' (FDCE) to 'u_lsq/sq_reg[0][be][3]'
+---------------------------------------------------------------------------------
+Finished Cross Boundary and Area Optimization : Time (s): cpu = 00:01:19 ; elapsed = 00:01:41 . Memory (MB): peak = 1761.703 ; gain = 1022.941
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start ROM, RAM, DSP, Shift Register and Retiming Reporting
+---------------------------------------------------------------------------------
+
+ROM: Preliminary Mapping Report
++------------+------------+---------------+----------------+
+|Module Name | RTL Object | Depth x Width | Implemented As | 
++------------+------------+---------------+----------------+
+|i_cache     | mem        | 2048x8        | LUT            | 
+|i_cache     | mem        | 2048x8        | LUT            | 
+|i_cache     | mem        | 2048x8        | LUT            | 
+|i_cache     | mem        | 2048x8        | LUT            | 
++------------+------------+---------------+----------------+
+
+
+Block RAM: Preliminary Mapping Report (see note below)
++------------+------------+------------------------+---+---+------------------------+---+---+------------------+--------+--------+
+|Module Name | RTL Object | PORT A (Depth x Width) | W | R | PORT B (Depth x Width) | W | R | Ports driving FF | RAMB18 | RAMB36 | 
++------------+------------+------------------------+---+---+------------------------+---+---+------------------+--------+--------+
+|u_dmem      | mem_reg    | 32 K x 32(READ_FIRST)  | W |   | 32 K x 32(WRITE_FIRST) |   | R | Port A and B     | 0      | 32     | 
++------------+------------+------------------------+---+---+------------------------+---+---+------------------+--------+--------+
+
+Note: The table above is a preliminary report that shows the Block RAMs at the current stage of the synthesis flow. Some Block RAMs may be reimplemented as non Block RAM primitives later in the synthesis flow. Multiple instantiated Block RAMs are reported only once. 
+---------------------------------------------------------------------------------
+Finished ROM, RAM, DSP, Shift Register and Retiming Reporting
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start Applying XDC Timing Constraints
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Finished Applying XDC Timing Constraints : Time (s): cpu = 00:01:25 ; elapsed = 00:01:47 . Memory (MB): peak = 1818.840 ; gain = 1080.078
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start Timing Optimization
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Finished Timing Optimization : Time (s): cpu = 00:03:59 ; elapsed = 00:04:26 . Memory (MB): peak = 2658.566 ; gain = 1919.805
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start ROM, RAM, DSP, Shift Register and Retiming Reporting
+---------------------------------------------------------------------------------
+
+Block RAM: Final Mapping Report
++------------+------------+------------------------+---+---+------------------------+---+---+------------------+--------+--------+
+|Module Name | RTL Object | PORT A (Depth x Width) | W | R | PORT B (Depth x Width) | W | R | Ports driving FF | RAMB18 | RAMB36 | 
++------------+------------+------------------------+---+---+------------------------+---+---+------------------+--------+--------+
+|u_dmem      | mem_reg    | 32 K x 32(READ_FIRST)  | W |   | 32 K x 32(WRITE_FIRST) |   | R | Port A and B     | 0      | 32     | 
++------------+------------+------------------------+---+---+------------------------+---+---+------------------+--------+--------+
+
+---------------------------------------------------------------------------------
+Finished ROM, RAM, DSP, Shift Register and Retiming Reporting
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start Technology Mapping
+---------------------------------------------------------------------------------
+INFO: [Synth 8-7052] The timing for the instance i_1/i_5155 (implemented as a Block RAM) might be sub-optimal as no optional output register could be merged into the ram block. Providing additional output register may help in improving timing.
+---------------------------------------------------------------------------------
+Finished Technology Mapping : Time (s): cpu = 00:04:05 ; elapsed = 00:04:38 . Memory (MB): peak = 2658.566 ; gain = 1919.805
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start IO Insertion
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start Flattening Before IO Insertion
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Finished Flattening Before IO Insertion
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start Final Netlist Cleanup
+---------------------------------------------------------------------------------
+INFO: [Synth 8-7052] The timing for the instance u_fetchi_17464 (implemented as a Block RAM) might be sub-optimal as no optional output register could be merged into the ram block. Providing additional output register may help in improving timing.
+---------------------------------------------------------------------------------
+Finished Final Netlist Cleanup
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Finished IO Insertion : Time (s): cpu = 00:04:12 ; elapsed = 00:04:45 . Memory (MB): peak = 2658.566 ; gain = 1919.805
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start Renaming Generated Instances
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Finished Renaming Generated Instances : Time (s): cpu = 00:04:12 ; elapsed = 00:04:45 . Memory (MB): peak = 2658.566 ; gain = 1919.805
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start Rebuilding User Hierarchy
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Finished Rebuilding User Hierarchy : Time (s): cpu = 00:04:15 ; elapsed = 00:04:48 . Memory (MB): peak = 2658.566 ; gain = 1919.805
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start Renaming Generated Ports
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Finished Renaming Generated Ports : Time (s): cpu = 00:04:15 ; elapsed = 00:04:49 . Memory (MB): peak = 2658.566 ; gain = 1919.805
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start Handling Custom Attributes
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Finished Handling Custom Attributes : Time (s): cpu = 00:04:16 ; elapsed = 00:04:50 . Memory (MB): peak = 2658.566 ; gain = 1919.805
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start Renaming Generated Nets
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Finished Renaming Generated Nets : Time (s): cpu = 00:04:16 ; elapsed = 00:04:50 . Memory (MB): peak = 2658.566 ; gain = 1919.805
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start Writing Synthesis Report
+---------------------------------------------------------------------------------
+
+Report BlackBoxes: 
++-+--------------+----------+
+| |BlackBox name |Instances |
++-+--------------+----------+
++-+--------------+----------+
+
+Report Cell Usage: 
++------+---------+------+
+|      |Cell     |Count |
++------+---------+------+
+|1     |BUFG     |     1|
+|2     |CARRY4   |   149|
+|3     |LUT1     |     7|
+|4     |LUT2     |   649|
+|5     |LUT3     |  1060|
+|6     |LUT4     |  1101|
+|7     |LUT5     |  2975|
+|8     |LUT6     | 17726|
+|9     |MUXF7    |  4866|
+|10    |MUXF8    |  2191|
+|11    |RAMB18E1 |     1|
+|12    |RAMB36E1 |    32|
+|13    |FDCE     | 10438|
+|14    |FDPE     |  1368|
+|15    |FDRE     |  1704|
+|16    |FDSE     |   385|
+|17    |IBUF     |     2|
+|18    |OBUF     |    33|
++------+---------+------+
+---------------------------------------------------------------------------------
+Finished Writing Synthesis Report : Time (s): cpu = 00:04:16 ; elapsed = 00:04:50 . Memory (MB): peak = 2658.566 ; gain = 1919.805
+---------------------------------------------------------------------------------
+Synthesis finished with 0 errors, 0 critical warnings and 116 warnings.
+Synthesis Optimization Runtime : Time (s): cpu = 00:04:02 ; elapsed = 00:04:46 . Memory (MB): peak = 2658.566 ; gain = 1831.980
+Synthesis Optimization Complete : Time (s): cpu = 00:04:16 ; elapsed = 00:04:50 . Memory (MB): peak = 2658.566 ; gain = 1919.805
+INFO: [Project 1-571] Translating synthesized netlist
+Netlist sorting complete. Time (s): cpu = 00:00:01 ; elapsed = 00:00:00.323 . Memory (MB): peak = 2658.566 ; gain = 0.000
+INFO: [Netlist 29-17] Analyzing 7239 Unisim elements for replacement
+INFO: [Netlist 29-28] Unisim Transformation completed in 0 CPU seconds
+INFO: [Project 1-570] Preparing netlist for logic optimization
+INFO: [Opt 31-138] Pushed 0 inverter(s) to 0 load pin(s).
+Netlist sorting complete. Time (s): cpu = 00:00:00 ; elapsed = 00:00:00.010 . Memory (MB): peak = 2658.566 ; gain = 0.000
+INFO: [Project 1-111] Unisim Transformation Summary:
+No Unisim elements were transformed.
+
+Synth Design complete | Checksum: 7730898c
+INFO: [Common 17-83] Releasing license: Synthesis
+232 Infos, 170 Warnings, 0 Critical Warnings and 0 Errors encountered.
+synth_design completed successfully
+synth_design: Time (s): cpu = 00:04:23 ; elapsed = 00:05:01 . Memory (MB): peak = 2658.566 ; gain = 2152.594
+Write ShapeDB Complete: Time (s): cpu = 00:00:01 ; elapsed = 00:00:00.051 . Memory (MB): peak = 2658.566 ; gain = 0.000
+INFO: [Common 17-1381] The checkpoint 'D:/Vivado_Project/116C_Honor/189_ooo_processor_top/189_ooo_processor_top.runs/synth_1/top.dcp' has been generated.
+INFO: [Vivado 12-24828] Executing command : report_utilization -file top_utilization_synth.rpt -pb top_utilization_synth.pb
+INFO: [Common 17-206] Exiting Vivado at Thu Dec 25 16:04:05 2025...

@@ -44,31 +44,14 @@ module PRF #(
   assign busy_o = busy;
 
   // ============================================================
-  // Bypass/Forwarding Logic for same-cycle read-after-write
+  // Read ports (combinational, NO bypass)
   // ============================================================
-  // Helper function to select data with bypass
-  function automatic logic [31:0] read_with_bypass(
-    input logic [6:0] addr,
-    input logic [31:0] rf_data
-  );
-    // Check if any writeback is targeting this address in the same cycle
-    if (wb_alu_en_i && wb_alu_preg_i == addr && addr != 7'd0)
-      return wb_alu_data_i;
-    else if (wb_br_en_i && wb_br_preg_i == addr && addr != 7'd0)
-      return wb_br_data_i;
-    else if (wb_lsu_en_i && wb_lsu_preg_i == addr && addr != 7'd0)
-      return wb_lsu_data_i;
-    else
-      return rf_data;
-  endfunction
-
-  // Read ports with bypass (combinational)
-  assign iss0_r0_o = read_with_bypass(iss0_src0_i, rf[iss0_src0_i]);
-  assign iss0_r1_o = read_with_bypass(iss0_src1_i, rf[iss0_src1_i]);
-  assign iss1_r0_o = read_with_bypass(iss1_src0_i, rf[iss1_src0_i]);
-  assign iss1_r1_o = read_with_bypass(iss1_src1_i, rf[iss1_src1_i]);
-  assign iss2_r0_o = read_with_bypass(iss2_src0_i, rf[iss2_src0_i]);
-  assign iss2_r1_o = read_with_bypass(iss2_src1_i, rf[iss2_src1_i]);
+  assign iss0_r0_o = rf[iss0_src0_i];
+  assign iss0_r1_o = rf[iss0_src1_i];
+  assign iss1_r0_o = rf[iss1_src0_i];
+  assign iss1_r1_o = rf[iss1_src1_i];
+  assign iss2_r0_o = rf[iss2_src0_i];
+  assign iss2_r1_o = rf[iss2_src1_i];
 
   logic [7:0] i;
   always_ff @(posedge clk or posedge reset) begin

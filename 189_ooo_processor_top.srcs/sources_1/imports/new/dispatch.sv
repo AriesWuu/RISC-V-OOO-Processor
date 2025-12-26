@@ -93,6 +93,38 @@ module dispatch_module #(
     // LSQ ready signal (for store dispatch backpressure)
     input  logic        lsq_alloc_ready_i
 );
+    // Same-cycle forwarding for issued operands.
+    // Priority (to preserve old PRF behavior if multiple WB hit same preg):
+    //   ALU > BR > LSU > PRF
+    function automatic logic [31:0] op_with_bypass(
+        input logic [PRF_BITS-1:0] addr,
+        input logic [31:0]          prf_data
+    );
+        logic addr_nz;
+        logic hit_alu, hit_br, hit_lsu;
+        logic oh_alu, oh_br, oh_lsu, oh_prf;
+        logic [31:0] data;
+        begin
+            addr_nz = (addr != '0);
+
+            hit_alu = wb_alu_valid_i && addr_nz && (wb_alu_prf_i == addr);
+            hit_br  = wb_br_valid_i  && addr_nz && (wb_br_prf_i  == addr);
+            hit_lsu = wb_lsu_valid_i && addr_nz && (wb_lsu_prf_i == addr);
+
+            oh_alu = hit_alu;
+            oh_br  = hit_br  && !hit_alu;
+            oh_lsu = hit_lsu && !hit_alu && !hit_br;
+            oh_prf = !(oh_alu || oh_br || oh_lsu);
+
+            data = ({32{oh_alu}} & wb_alu_data_i)
+                 | ({32{oh_br}}  & wb_br_data_i)
+                 | ({32{oh_lsu}} & wb_lsu_data_i)
+                 | ({32{oh_prf}} & prf_data);
+
+            op_with_bypass = data;
+        end
+    endfunction
+
     // ==================================
     // 1. Single-entry pipeline buffer
     // ==================================
@@ -135,6 +167,11 @@ module dispatch_module #(
     // =====================
     logic [PHYS_REGS-1:0] prf_busy_bits;
 
+    // Raw PRF read data (no bypass inside PRF)
+    logic [31:0] alu_src0_data_raw, alu_src1_data_raw;
+    logic [31:0] br_src0_data_raw,  br_src1_data_raw;
+    logic [31:0] lsu_src0_data_raw, lsu_src1_data_raw;
+
     // Writeback and explicit busy-clear paths are not hooked up yet; only set busy on allocation
     logic        prf_set_busy_en;
     logic [6:0]  prf_set_busy_preg;
@@ -167,21 +204,29 @@ module dispatch_module #(
         .iss0_valid_i     (alu_issue_valid_o),
         .iss0_src0_i      (alu_issue_pkt_o.src0_prf),
         .iss0_src1_i      (alu_issue_pkt_o.src1_prf),
-        .iss0_r0_o        (alu_src0_data_o),
-        .iss0_r1_o        (alu_src1_data_o),
+        .iss0_r0_o        (alu_src0_data_raw),
+        .iss0_r1_o        (alu_src1_data_raw),
 
         .iss1_valid_i     (br_issue_valid_o),
         .iss1_src0_i      (br_issue_pkt_o.src0_prf),
         .iss1_src1_i      (br_issue_pkt_o.src1_prf),
-        .iss1_r0_o        (br_src0_data_o),
-        .iss1_r1_o        (br_src1_data_o),
+        .iss1_r0_o        (br_src0_data_raw),
+        .iss1_r1_o        (br_src1_data_raw),
 
         .iss2_valid_i     (lsu_issue_valid_o),
         .iss2_src0_i      (lsu_issue_pkt_o.src0_prf),
         .iss2_src1_i      (lsu_issue_pkt_o.src1_prf),
-        .iss2_r0_o        (lsu_src0_data_o),
-        .iss2_r1_o        (lsu_src1_data_o)
+        .iss2_r0_o        (lsu_src0_data_raw),
+        .iss2_r1_o        (lsu_src1_data_raw)
     );
+
+    // Apply same-cycle operand bypass here (moved out of PRF)
+    assign alu_src0_data_o = op_with_bypass(alu_issue_pkt_o.src0_prf, alu_src0_data_raw);
+    assign alu_src1_data_o = op_with_bypass(alu_issue_pkt_o.src1_prf, alu_src1_data_raw);
+    assign br_src0_data_o  = op_with_bypass(br_issue_pkt_o.src0_prf,  br_src0_data_raw);
+    assign br_src1_data_o  = op_with_bypass(br_issue_pkt_o.src1_prf,  br_src1_data_raw);
+    assign lsu_src0_data_o = op_with_bypass(lsu_issue_pkt_o.src0_prf, lsu_src0_data_raw);
+    assign lsu_src1_data_o = op_with_bypass(lsu_issue_pkt_o.src1_prf, lsu_src1_data_raw);
 
     // =====================
     // 3. Three reservation stations (each with 8 entries)
