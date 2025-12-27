@@ -11,7 +11,7 @@
 ## -----------------------------
 ## Clock
 ## - Set the period to match your actual board clock.
-## - Avoid using `-add` here; multiple clocks on one port can confuse timing.
+## - Target: 50MHz (20ns period)
 ## -----------------------------
 set_property -dict { PACKAGE_PIN H16   IOSTANDARD LVCMOS33 } [get_ports { clk }];
 create_clock -name sys_clk_pin -period 20.00 -waveform {0 10.000} [get_ports { clk }];
@@ -27,6 +27,13 @@ set_false_path -from [get_ports { reset }];
 ## Commit valid: map to LED0
 ## -----------------------------
 set_property -dict { PACKAGE_PIN R14   IOSTANDARD LVCMOS33 } [get_ports { commit_valid_o }];
+
+## -----------------------------
+## Debug outputs - set false path (LEDs/Pmod don't need strict timing)
+## This eliminates timing violations on debug-only output paths
+## -----------------------------
+set_false_path -to [get_ports { commit_valid_o }]
+set_false_path -to [get_ports { pc_out[*] }]
 
 ## -----------------------------
 ## pc_out[31:0] mapping
@@ -74,3 +81,15 @@ set_property -dict { PACKAGE_PIN V16   IOSTANDARD LVCMOS33 } [get_ports { pc_out
 set_property -dict { PACKAGE_PIN W16   IOSTANDARD LVCMOS33 } [get_ports { pc_out[30] }]; # Sch=jb_n[3]
 set_property -dict { PACKAGE_PIN V12   IOSTANDARD LVCMOS33 } [get_ports { pc_out[31] }]; # Sch=jb_p[4]
 
+## =============================================================
+## TIMING OPTIMIZATION CONSTRAINTS
+## =============================================================
+
+## -----------------------------
+## Minimal, warning-free timing hints
+## Notes:
+## - XDC is not the right place for run-level settings (e.g. [get_runs]); keep those in project/run Tcl.
+## - Guard constraints so missing hierarchy doesn't emit "set_property expects at least one object".
+## -----------------------------
+
+set_property MAX_FANOUT 16 [get_cells -hierarchical -filter {NAME =~ "*u_prf*busy*"}]

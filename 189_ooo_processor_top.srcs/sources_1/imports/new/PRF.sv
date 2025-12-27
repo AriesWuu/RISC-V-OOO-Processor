@@ -1,5 +1,7 @@
 `timescale 1ns / 1ps
 
+// Physical Register File with REPLICATED busy scoreboard for timing optimization
+// Each RS gets its own copy of the busy vector to reduce fanout
 module PRF #(
   parameter int PHYS_REGS = 128
 )(
@@ -23,7 +25,11 @@ module PRF #(
   input  logic [6:0]  set_busy_preg_i,
   input  logic        clr_busy_en_i,
   input  logic [6:0]  clr_busy_preg_i,
-  output logic [PHYS_REGS-1:0] busy_o,
+  
+  // Replicated busy outputs for each RS (reduces fanout from 48 to 16 per copy)
+  output logic [PHYS_REGS-1:0] busy_o,       // For ALU RS
+  output logic [PHYS_REGS-1:0] busy_br_o,    // For Branch RS
+  output logic [PHYS_REGS-1:0] busy_lsu_o,   // For LSU RS
 
   // three-way issue read ports (2 reads per way)
   input  logic        iss0_valid_i,
@@ -39,9 +45,16 @@ module PRF #(
   output logic [31:0] iss2_r0_o, iss2_r1_o
 );
   logic [31:0] rf[PHYS_REGS];
-  logic [PHYS_REGS-1:0] busy;
+  
+  // Replicated busy registers - same update logic, separate physical registers
+  // This forces Vivado to create 3 copies, reducing fanout per register
+  (* DONT_TOUCH = "yes" *) logic [PHYS_REGS-1:0] busy_alu;
+  (* DONT_TOUCH = "yes" *) logic [PHYS_REGS-1:0] busy_br;
+  (* DONT_TOUCH = "yes" *) logic [PHYS_REGS-1:0] busy_lsu;
 
-  assign busy_o = busy;
+  assign busy_o     = busy_alu;
+  assign busy_br_o  = busy_br;
+  assign busy_lsu_o = busy_lsu;
 
   // ============================================================
   // Read ports (combinational, NO bypass)
@@ -53,33 +66,52 @@ module PRF #(
   assign iss2_r0_o = rf[iss2_src0_i];
   assign iss2_r1_o = rf[iss2_src1_i];
 
+  // ============================================================
+  // Unified update logic for all busy copies
+  // ============================================================
   logic [7:0] i;
   always_ff @(posedge clk or posedge reset) begin
     if(reset) begin
       for (i=0;i<PHYS_REGS;i++) begin
-        rf[i]   <= '0;
-        busy[i] <= 1'b0;
+        rf[i]       <= '0;
+        busy_alu[i] <= 1'b0;
+        busy_br[i]  <= 1'b0;
+        busy_lsu[i] <= 1'b0;
       end
     end else begin
-      // Writeback ports
+      // Writeback ports - update RF and clear busy in all copies
       if (wb_alu_en_i && wb_alu_preg_i != 7'd0) begin
-        rf[wb_alu_preg_i]   <= wb_alu_data_i;
-        busy[wb_alu_preg_i] <= 1'b0;
+        rf[wb_alu_preg_i]       <= wb_alu_data_i;
+        busy_alu[wb_alu_preg_i] <= 1'b0;
+        busy_br[wb_alu_preg_i]  <= 1'b0;
+        busy_lsu[wb_alu_preg_i] <= 1'b0;
       end
       if (wb_br_en_i && wb_br_preg_i != 7'd0) begin
-        rf[wb_br_preg_i]   <= wb_br_data_i;
-        busy[wb_br_preg_i] <= 1'b0;
+        rf[wb_br_preg_i]       <= wb_br_data_i;
+        busy_alu[wb_br_preg_i] <= 1'b0;
+        busy_br[wb_br_preg_i]  <= 1'b0;
+        busy_lsu[wb_br_preg_i] <= 1'b0;
       end
       if (wb_lsu_en_i && wb_lsu_preg_i != 7'd0) begin
-        rf[wb_lsu_preg_i]   <= wb_lsu_data_i;
-        busy[wb_lsu_preg_i] <= 1'b0;
+        rf[wb_lsu_preg_i]       <= wb_lsu_data_i;
+        busy_alu[wb_lsu_preg_i] <= 1'b0;
+        busy_br[wb_lsu_preg_i]  <= 1'b0;
+        busy_lsu[wb_lsu_preg_i] <= 1'b0;
       end
 
-      // Set busy
-      if (set_busy_en_i && set_busy_preg_i != 7'd0) busy[set_busy_preg_i] <= 1'b1;
+      // Set busy - update all copies
+      if (set_busy_en_i && set_busy_preg_i != 7'd0) begin
+        busy_alu[set_busy_preg_i] <= 1'b1;
+        busy_br[set_busy_preg_i]  <= 1'b1;
+        busy_lsu[set_busy_preg_i] <= 1'b1;
+      end
       
-      // Explicit clear busy 
-      if (clr_busy_en_i && clr_busy_preg_i != 7'd0) busy[clr_busy_preg_i] <= 1'b0;
+      // Explicit clear busy - update all copies
+      if (clr_busy_en_i && clr_busy_preg_i != 7'd0) begin
+        busy_alu[clr_busy_preg_i] <= 1'b0;
+        busy_br[clr_busy_preg_i]  <= 1'b0;
+        busy_lsu[clr_busy_preg_i] <= 1'b0;
+      end
     end
   end
 endmodule

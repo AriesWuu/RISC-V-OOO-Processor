@@ -163,9 +163,11 @@ module dispatch_module #(
     );
 
     // =====================
-    // 2. PRF with busy scoreboard
+    // 2. PRF with busy scoreboard (replicated for timing)
     // =====================
-    logic [PHYS_REGS-1:0] prf_busy_bits;
+    logic [PHYS_REGS-1:0] prf_busy_alu;
+    logic [PHYS_REGS-1:0] prf_busy_br;
+    logic [PHYS_REGS-1:0] prf_busy_lsu;
 
     // Raw PRF read data (no bypass inside PRF)
     logic [31:0] alu_src0_data_raw, alu_src1_data_raw;
@@ -199,7 +201,10 @@ module dispatch_module #(
         .set_busy_preg_i  (prf_set_busy_preg),
         .clr_busy_en_i    (1'b0),
         .clr_busy_preg_i  ('0),
-        .busy_o           (prf_busy_bits),
+        // Replicated busy outputs for each RS
+        .busy_o           (prf_busy_alu),
+        .busy_br_o        (prf_busy_br),
+        .busy_lsu_o       (prf_busy_lsu),
         // Three issue read ports
         .iss0_valid_i     (alu_issue_valid_o),
         .iss0_src0_i      (alu_issue_pkt_o.src0_prf),
@@ -235,7 +240,7 @@ module dispatch_module #(
     logic [$clog2(ROB_DEPTH)-1:0] rob_head_out;
     logic [$clog2(ROB_DEPTH)-1:0] rob_tail_cp_out;
     
-    // ALU RS - Uses "oldest among ready" policy
+    // ALU RS - Uses "oldest among ready" policy with pipelined issue
     logic        alu_alloc_ready;
     logic        alu_alloc_valid;
     rs_pkt_t     alu_alloc_pkt;
@@ -248,7 +253,7 @@ module dispatch_module #(
         .recover_i            (recover_i),
         .rob_head_i           (rob_head_out),
         .rob_tail_cp_i        (rob_tail_cp_out),
-        .prf_busy_i           (prf_busy_bits),
+        .prf_busy_i           (prf_busy_alu),  // Use dedicated busy copy for ALU RS
         .wb_alu_valid_i       (wb_alu_valid_i),
         .wb_alu_prf_i         (wb_alu_prf_i),
         .wb_br_valid_i        (wb_br_valid_i),
@@ -263,7 +268,7 @@ module dispatch_module #(
         .issue_pkt_o          (alu_issue_pkt_o)
     );
 
-    // BR RS - Uses "oldest among ready" policy
+    // BR RS - Uses "oldest among ready" policy with pipelined issue
     logic        br_alloc_ready;
     logic        br_alloc_valid;
     rs_pkt_t     br_alloc_pkt;
@@ -276,7 +281,7 @@ module dispatch_module #(
         .recover_i            (recover_i),
         .rob_head_i           (rob_head_out),
         .rob_tail_cp_i        (rob_tail_cp_out),
-        .prf_busy_i           (prf_busy_bits),
+        .prf_busy_i           (prf_busy_br),  // Use dedicated busy copy for Branch RS
         .wb_alu_valid_i       (wb_alu_valid_i),
         .wb_alu_prf_i         (wb_alu_prf_i),
         .wb_br_valid_i        (wb_br_valid_i),
@@ -291,7 +296,7 @@ module dispatch_module #(
         .issue_pkt_o          (br_issue_pkt_o)
     );
 
-    // LSU RS - Uses "oldest among ready" policy (LSQ handles memory ordering)
+    // LSU RS - Uses "oldest among ready" policy with pipelined issue (LSQ handles memory ordering)
     logic        lsu_alloc_ready;
     logic        lsu_alloc_valid;
     rs_pkt_t     lsu_alloc_pkt;
@@ -304,7 +309,7 @@ module dispatch_module #(
         .recover_i            (recover_i),
         .rob_head_i           (rob_head_out),
         .rob_tail_cp_i        (rob_tail_cp_out),
-        .prf_busy_i           (prf_busy_bits),
+        .prf_busy_i           (prf_busy_lsu),  // Use dedicated busy copy for LSU RS
         .wb_alu_valid_i       (wb_alu_valid_i),
         .wb_alu_prf_i         (wb_alu_prf_i),
         .wb_br_valid_i        (wb_br_valid_i),

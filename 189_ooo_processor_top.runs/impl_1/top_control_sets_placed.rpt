@@ -1,0 +1,445 @@
+Copyright 1986-2022 Xilinx, Inc. All Rights Reserved. Copyright 2022-2025 Advanced Micro Devices, Inc. All Rights Reserved.
+---------------------------------------------------------------------------------------------------------------------------------------------
+| Tool Version : Vivado v.2025.1 (win64) Build 6140274 Thu May 22 00:12:29 MDT 2025
+| Date         : Fri Dec 26 22:02:37 2025
+| Host         : LAPTOP-N6UO8VGR running 64-bit major release  (build 9200)
+| Command      : report_control_sets -verbose -file top_control_sets_placed.rpt
+| Design       : top
+| Device       : xc7z020
+---------------------------------------------------------------------------------------------------------------------------------------------
+
+Control Set Information
+
+Table of Contents
+-----------------
+1. Summary
+2. Histogram
+3. Flip-Flop Distribution
+4. Detailed Control Set Information
+
+1. Summary
+----------
+
++----------------------------------------------------------+-------+
+|                          Status                          | Count |
++----------------------------------------------------------+-------+
+| Total control sets                                       |   367 |
+|    Minimum number of control sets                        |   367 |
+|    Addition due to synthesis replication                 |     0 |
+|    Addition due to physical synthesis replication        |     0 |
+| Unused register locations in slices containing registers |   499 |
++----------------------------------------------------------+-------+
+* Control sets can be merged at opt_design using control_set_merge or merge_equivalent_drivers
+** Run report_qor_suggestions for automated merging and remapping suggestions
+
+
+2. Histogram
+------------
+
++--------------------+-------+
+|       Fanout       | Count |
++--------------------+-------+
+| Total control sets |   367 |
+| >= 0 to < 4        |     0 |
+| >= 4 to < 6        |    17 |
+| >= 6 to < 8        |   129 |
+| >= 8 to < 10       |    18 |
+| >= 10 to < 12      |     0 |
+| >= 12 to < 14      |     0 |
+| >= 14 to < 16      |     0 |
+| >= 16              |   203 |
++--------------------+-------+
+* Control sets can be remapped at either synth_design or opt_design
+
+
+3. Flip-Flop Distribution
+-------------------------
+
++--------------+-----------------------+------------------------+-----------------+--------------+
+| Clock Enable | Synchronous Set/Reset | Asynchronous Set/Reset | Total Registers | Total Slices |
++--------------+-----------------------+------------------------+-----------------+--------------+
+| No           | No                    | No                     |               7 |            5 |
+| No           | No                    | Yes                    |            1153 |          491 |
+| No           | Yes                   | No                     |               0 |            0 |
+| Yes          | No                    | No                     |              30 |            7 |
+| Yes          | No                    | Yes                    |           11342 |         5775 |
+| Yes          | Yes                   | No                     |            1761 |          583 |
++--------------+-----------------------+------------------------+-----------------+--------------+
+
+
+4. Detailed Control Set Information
+-----------------------------------
+
++----------------+--------------------------------------------------------------+------------------+------------------+----------------+--------------+
+|  Clock Signal  |                         Enable Signal                        | Set/Reset Signal | Slice Load Count | Bel Load Count | Bels / Slice |
++----------------+--------------------------------------------------------------+------------------+------------------+----------------+--------------+
+|  clk_IBUF_BUFG | u_lsq/sq[4][rob_tag][3]_i_1_n_0                              | reset_IBUF       |                3 |              4 |         1.33 |
+|  clk_IBUF_BUFG | u_lsq/sq[1][rob_tag][3]_i_1_n_0                              | reset_IBUF       |                1 |              4 |         4.00 |
+|  clk_IBUF_BUFG | u_lsq/sq[6][rob_tag][3]_i_1_n_0                              | reset_IBUF       |                2 |              4 |         2.00 |
+|  clk_IBUF_BUFG | u_dispatch/u_rob/E[0]                                        | reset_IBUF       |                2 |              4 |         2.00 |
+|  clk_IBUF_BUFG | u_lsq/sq[2][rob_tag][3]_i_1_n_0                              | reset_IBUF       |                2 |              4 |         2.00 |
+|  clk_IBUF_BUFG | u_branch/br_mispredict_o_reg_1[0]                            | reset_IBUF       |                2 |              4 |         2.00 |
+|  clk_IBUF_BUFG | u_lsq/sq[5][rob_tag][3]_i_1_n_0                              | reset_IBUF       |                2 |              4 |         2.00 |
+|  clk_IBUF_BUFG | u_rename/u_rob_tag/tag_cp[7][3]_i_1_n_0                      | reset_IBUF       |                2 |              4 |         2.00 |
+|  clk_IBUF_BUFG | u_rename/u_rob_tag/tag_cp[3][3]_i_1_n_0                      | reset_IBUF       |                1 |              4 |         4.00 |
+|  clk_IBUF_BUFG | u_lsq/sq[7][rob_tag][3]_i_1_n_0                              | reset_IBUF       |                2 |              4 |         2.00 |
+|  clk_IBUF_BUFG | u_rename/u_rob_tag/tag_cp[15][3]_i_1_n_0                     | reset_IBUF       |                1 |              4 |         4.00 |
+|  clk_IBUF_BUFG | u_lsq/sq_head                                                | reset_IBUF       |                1 |              4 |         4.00 |
+|  clk_IBUF_BUFG | u_branch/br_mispredict_o_reg_0[0]                            | reset_IBUF       |                1 |              4 |         4.00 |
+|  clk_IBUF_BUFG | u_lsq/sq[3][rob_tag][3]_i_1_n_0                              | reset_IBUF       |                1 |              4 |         4.00 |
+|  clk_IBUF_BUFG | u_rename/u_rob_tag/tag_cp[11][3]_i_1_n_0                     | reset_IBUF       |                1 |              4 |         4.00 |
+|  clk_IBUF_BUFG | u_lsq/sq[0][rob_tag][3]_i_1_n_0                              | reset_IBUF       |                2 |              4 |         2.00 |
+|  clk_IBUF_BUFG | u_branch/br_mispredict_o_reg_30[0]                           | reset_IBUF       |                1 |              4 |         4.00 |
+|  clk_IBUF_BUFG |                                                              |                  |                5 |              7 |         1.40 |
+|  clk_IBUF_BUFG | u_rename/u_free_list/buffer_mem[21][6]_i_1_n_0               | reset_IBUF       |                3 |              7 |         2.33 |
+|  clk_IBUF_BUFG | u_rename/u_free_list/buffer_mem[0][6]_i_1_n_0                | reset_IBUF       |                2 |              7 |         3.50 |
+|  clk_IBUF_BUFG | u_skid_decode_rename/br_mispredict_o_reg_5[0]                | reset_IBUF       |                5 |              7 |         1.40 |
+|  clk_IBUF_BUFG | u_skid_decode_rename/br_mispredict_o_reg_9[0]                | reset_IBUF       |                3 |              7 |         2.33 |
+|  clk_IBUF_BUFG | u_rename/u_free_list/buffer_mem[18][6]_i_1_n_0               | reset_IBUF       |                1 |              7 |         7.00 |
+|  clk_IBUF_BUFG | u_rename/u_free_list/buffer_mem[23][6]_i_1_n_0               | reset_IBUF       |                1 |              7 |         7.00 |
+|  clk_IBUF_BUFG | u_rename/u_free_list/buffer_mem[30][6]_i_1_n_0               | reset_IBUF       |                5 |              7 |         1.40 |
+|  clk_IBUF_BUFG | u_rename/u_free_list/buffer_mem[20][6]_i_1_n_0               | reset_IBUF       |                3 |              7 |         2.33 |
+|  clk_IBUF_BUFG | u_rename/u_free_list/buffer_mem[1][6]_i_1_n_0                | reset_IBUF       |                1 |              7 |         7.00 |
+|  clk_IBUF_BUFG | u_rename/u_free_list/buffer_mem[11][6]_i_1_n_0               | reset_IBUF       |                2 |              7 |         3.50 |
+|  clk_IBUF_BUFG | u_rename/u_free_list/buffer_mem[31][6]_i_1_n_0               | reset_IBUF       |                6 |              7 |         1.17 |
+|  clk_IBUF_BUFG | u_rename/u_free_list/buffer_mem[17][6]_i_1_n_0               | reset_IBUF       |                1 |              7 |         7.00 |
+|  clk_IBUF_BUFG | u_rename/u_free_list/buffer_mem[13][6]_i_1_n_0               | reset_IBUF       |                1 |              7 |         7.00 |
+|  clk_IBUF_BUFG | u_skid_decode_rename/br_mispredict_o_reg_3[0]                | reset_IBUF       |                2 |              7 |         3.50 |
+|  clk_IBUF_BUFG | u_rename/u_free_list/buffer_mem[81][6]_i_1_n_0               | reset_IBUF       |                2 |              7 |         3.50 |
+|  clk_IBUF_BUFG | u_skid_decode_rename/br_mispredict_o_reg_29[0]               | reset_IBUF       |                4 |              7 |         1.75 |
+|  clk_IBUF_BUFG | u_skid_decode_rename/br_mispredict_o_reg_13[0]               | reset_IBUF       |                5 |              7 |         1.40 |
+|  clk_IBUF_BUFG | u_skid_decode_rename/br_mispredict_o_reg_8[0]                | reset_IBUF       |                5 |              7 |         1.40 |
+|  clk_IBUF_BUFG | u_skid_decode_rename/br_mispredict_o_reg_12[0]               | reset_IBUF       |                5 |              7 |         1.40 |
+|  clk_IBUF_BUFG | u_rename/u_free_list/buffer_mem[34][6]_i_1_n_0               | reset_IBUF       |                2 |              7 |         3.50 |
+|  clk_IBUF_BUFG | u_skid_decode_rename/br_mispredict_o_reg_6[0]                | reset_IBUF       |                4 |              7 |         1.75 |
+|  clk_IBUF_BUFG | u_skid_decode_rename/br_mispredict_o_reg_0[0]                | reset_IBUF       |                3 |              7 |         2.33 |
+|  clk_IBUF_BUFG | u_skid_decode_rename/br_mispredict_o_reg_16[0]               | reset_IBUF       |                5 |              7 |         1.40 |
+|  clk_IBUF_BUFG | u_skid_decode_rename/br_mispredict_o_reg_2[0]                | reset_IBUF       |                5 |              7 |         1.40 |
+|  clk_IBUF_BUFG | u_skid_decode_rename/br_mispredict_o_reg_22[0]               | reset_IBUF       |                5 |              7 |         1.40 |
+|  clk_IBUF_BUFG | u_skid_decode_rename/br_mispredict_o_reg_18[0]               | reset_IBUF       |                4 |              7 |         1.75 |
+|  clk_IBUF_BUFG | u_skid_decode_rename/br_mispredict_o_reg_7[0]                | reset_IBUF       |                6 |              7 |         1.17 |
+|  clk_IBUF_BUFG | u_skid_decode_rename/br_mispredict_o_reg_10[0]               | reset_IBUF       |                5 |              7 |         1.40 |
+|  clk_IBUF_BUFG | u_skid_decode_rename/br_mispredict_o_reg_11[0]               | reset_IBUF       |                6 |              7 |         1.17 |
+|  clk_IBUF_BUFG | u_skid_decode_rename/br_mispredict_o_reg_21[0]               | reset_IBUF       |                5 |              7 |         1.40 |
+|  clk_IBUF_BUFG | u_skid_decode_rename/br_mispredict_o_reg_17[0]               | reset_IBUF       |                5 |              7 |         1.40 |
+|  clk_IBUF_BUFG | u_skid_decode_rename/br_mispredict_o_reg_4[0]                | reset_IBUF       |                5 |              7 |         1.40 |
+|  clk_IBUF_BUFG | u_skid_decode_rename/br_mispredict_o_reg_19[0]               | reset_IBUF       |                6 |              7 |         1.17 |
+|  clk_IBUF_BUFG | u_skid_decode_rename/br_mispredict_o_reg[0]                  | reset_IBUF       |                5 |              7 |         1.40 |
+|  clk_IBUF_BUFG | u_rename/u_free_list/buffer_mem[25][6]_i_1_n_0               | reset_IBUF       |                1 |              7 |         7.00 |
+|  clk_IBUF_BUFG | u_rename/u_free_list/buffer_mem[28][6]_i_1_n_0               | reset_IBUF       |                2 |              7 |         3.50 |
+|  clk_IBUF_BUFG | u_rename/u_free_list/buffer_mem[15][6]_i_1_n_0               | reset_IBUF       |                2 |              7 |         3.50 |
+|  clk_IBUF_BUFG | u_rename/u_free_list/buffer_mem[36][6]_i_1_n_0               | reset_IBUF       |                2 |              7 |         3.50 |
+|  clk_IBUF_BUFG | u_rename/u_free_list/buffer_mem[32][6]_i_1_n_0               | reset_IBUF       |                1 |              7 |         7.00 |
+|  clk_IBUF_BUFG | u_rename/u_free_list/buffer_mem[26][6]_i_1_n_0               | reset_IBUF       |                2 |              7 |         3.50 |
+|  clk_IBUF_BUFG | u_rename/u_free_list/buffer_mem[2][6]_i_1_n_0                | reset_IBUF       |                2 |              7 |         3.50 |
+|  clk_IBUF_BUFG | u_rename/u_free_list/buffer_mem[22][6]_i_1_n_0               | reset_IBUF       |                2 |              7 |         3.50 |
+|  clk_IBUF_BUFG | u_rename/u_free_list/buffer_mem[16][6]_i_1_n_0               | reset_IBUF       |                2 |              7 |         3.50 |
+|  clk_IBUF_BUFG | u_rename/u_free_list/buffer_mem[24][6]_i_1_n_0               | reset_IBUF       |                2 |              7 |         3.50 |
+|  clk_IBUF_BUFG | u_rename/u_free_list/buffer_mem[19][6]_i_1_n_0               | reset_IBUF       |                1 |              7 |         7.00 |
+|  clk_IBUF_BUFG | u_rename/u_free_list/buffer_mem[12][6]_i_1_n_0               | reset_IBUF       |                2 |              7 |         3.50 |
+|  clk_IBUF_BUFG | u_rename/u_free_list/buffer_mem[33][6]_i_1_n_0               | reset_IBUF       |                1 |              7 |         7.00 |
+|  clk_IBUF_BUFG | u_rename/u_free_list/buffer_mem[10][6]_i_1_n_0               | reset_IBUF       |                1 |              7 |         7.00 |
+|  clk_IBUF_BUFG | u_rename/u_free_list/buffer_mem[35][6]_i_1_n_0               | reset_IBUF       |                2 |              7 |         3.50 |
+|  clk_IBUF_BUFG | u_rename/u_free_list/buffer_mem[38][6]_i_1_n_0               | reset_IBUF       |                4 |              7 |         1.75 |
+|  clk_IBUF_BUFG | u_rename/u_free_list/buffer_mem[39][6]_i_1_n_0               | reset_IBUF       |                1 |              7 |         7.00 |
+|  clk_IBUF_BUFG | u_rename/u_free_list/buffer_mem[3][6]_i_1_n_0                | reset_IBUF       |                2 |              7 |         3.50 |
+|  clk_IBUF_BUFG | u_rename/u_free_list/buffer_mem[40][6]_i_1_n_0               | reset_IBUF       |                2 |              7 |         3.50 |
+|  clk_IBUF_BUFG | u_rename/u_free_list/buffer_mem[37][6]_i_1_n_0               | reset_IBUF       |                1 |              7 |         7.00 |
+|  clk_IBUF_BUFG | u_rename/u_free_list/buffer_mem[41][6]_i_1_n_0               | reset_IBUF       |                3 |              7 |         2.33 |
+|  clk_IBUF_BUFG | u_rename/u_free_list/buffer_mem[42][6]_i_1_n_0               | reset_IBUF       |                1 |              7 |         7.00 |
+|  clk_IBUF_BUFG | u_rename/u_free_list/buffer_mem[27][6]_i_1_n_0               | reset_IBUF       |                1 |              7 |         7.00 |
+|  clk_IBUF_BUFG | u_rename/u_free_list/buffer_mem[29][6]_i_1_n_0               | reset_IBUF       |                3 |              7 |         2.33 |
+|  clk_IBUF_BUFG | u_rename/u_free_list/buffer_mem[14][6]_i_1_n_0               | reset_IBUF       |                1 |              7 |         7.00 |
+|  clk_IBUF_BUFG | u_rename/u_free_list/buffer_mem[59][6]_i_1_n_0               | reset_IBUF       |                1 |              7 |         7.00 |
+|  clk_IBUF_BUFG | u_rename/u_free_list/buffer_mem[74][6]_i_1_n_0               | reset_IBUF       |                2 |              7 |         3.50 |
+|  clk_IBUF_BUFG | u_rename/u_free_list/buffer_mem[75][6]_i_1_n_0               | reset_IBUF       |                2 |              7 |         3.50 |
+|  clk_IBUF_BUFG | u_rename/u_free_list/buffer_mem[66][6]_i_1_n_0               | reset_IBUF       |                3 |              7 |         2.33 |
+|  clk_IBUF_BUFG | u_rename/u_free_list/buffer_mem[55][6]_i_1_n_0               | reset_IBUF       |                1 |              7 |         7.00 |
+|  clk_IBUF_BUFG | u_rename/u_free_list/buffer_mem[60][6]_i_1_n_0               | reset_IBUF       |                4 |              7 |         1.75 |
+|  clk_IBUF_BUFG | u_rename/u_free_list/buffer_mem[71][6]_i_1_n_0               | reset_IBUF       |                3 |              7 |         2.33 |
+|  clk_IBUF_BUFG | u_rename/u_free_list/buffer_mem[65][6]_i_1_n_0               | reset_IBUF       |                2 |              7 |         3.50 |
+|  clk_IBUF_BUFG | u_rename/u_free_list/buffer_mem[77][6]_i_1_n_0               | reset_IBUF       |                2 |              7 |         3.50 |
+|  clk_IBUF_BUFG | u_rename/u_free_list/buffer_mem[69][6]_i_1_n_0               | reset_IBUF       |                1 |              7 |         7.00 |
+|  clk_IBUF_BUFG | u_rename/u_free_list/buffer_mem[46][6]_i_1_n_0               | reset_IBUF       |                6 |              7 |         1.17 |
+|  clk_IBUF_BUFG | u_rename/u_free_list/buffer_mem[48][6]_i_1_n_0               | reset_IBUF       |                1 |              7 |         7.00 |
+|  clk_IBUF_BUFG | u_rename/u_free_list/buffer_mem[44][6]_i_1_n_0               | reset_IBUF       |                2 |              7 |         3.50 |
+|  clk_IBUF_BUFG | u_rename/u_free_list/buffer_mem[57][6]_i_1_n_0               | reset_IBUF       |                3 |              7 |         2.33 |
+|  clk_IBUF_BUFG | u_rename/u_free_list/buffer_mem[56][6]_i_1_n_0               | reset_IBUF       |                2 |              7 |         3.50 |
+|  clk_IBUF_BUFG | u_rename/u_free_list/buffer_mem[58][6]_i_1_n_0               | reset_IBUF       |                1 |              7 |         7.00 |
+|  clk_IBUF_BUFG | u_rename/u_free_list/buffer_mem[53][6]_i_1_n_0               | reset_IBUF       |                3 |              7 |         2.33 |
+|  clk_IBUF_BUFG | u_rename/u_free_list/buffer_mem[5][6]_i_1_n_0                | reset_IBUF       |                4 |              7 |         1.75 |
+|  clk_IBUF_BUFG | u_rename/u_free_list/buffer_mem[62][6]_i_1_n_0               | reset_IBUF       |                6 |              7 |         1.17 |
+|  clk_IBUF_BUFG | u_rename/u_free_list/buffer_mem[50][6]_i_1_n_0               | reset_IBUF       |                1 |              7 |         7.00 |
+|  clk_IBUF_BUFG | u_rename/u_free_list/buffer_mem[6][6]_i_1_n_0                | reset_IBUF       |                1 |              7 |         7.00 |
+|  clk_IBUF_BUFG | u_rename/u_free_list/buffer_mem[70][6]_i_1_n_0               | reset_IBUF       |                1 |              7 |         7.00 |
+|  clk_IBUF_BUFG | u_rename/u_free_list/buffer_mem[61][6]_i_1_n_0               | reset_IBUF       |                2 |              7 |         3.50 |
+|  clk_IBUF_BUFG | u_rename/u_free_list/buffer_mem[76][6]_i_1_n_0               | reset_IBUF       |                1 |              7 |         7.00 |
+|  clk_IBUF_BUFG | u_rename/u_free_list/buffer_mem[78][6]_i_1_n_0               | reset_IBUF       |                4 |              7 |         1.75 |
+|  clk_IBUF_BUFG | u_rename/u_free_list/buffer_mem[79][6]_i_1_n_0               | reset_IBUF       |                2 |              7 |         3.50 |
+|  clk_IBUF_BUFG | u_rename/u_free_list/buffer_mem[45][6]_i_1_n_0               | reset_IBUF       |                3 |              7 |         2.33 |
+|  clk_IBUF_BUFG | u_rename/u_free_list/buffer_mem[7][6]_i_1_n_0                | reset_IBUF       |                1 |              7 |         7.00 |
+|  clk_IBUF_BUFG | u_rename/u_free_list/buffer_mem[47][6]_i_1_n_0               | reset_IBUF       |                3 |              7 |         2.33 |
+|  clk_IBUF_BUFG | u_rename/u_free_list/buffer_mem[51][6]_i_1_n_0               | reset_IBUF       |                4 |              7 |         1.75 |
+|  clk_IBUF_BUFG | u_rename/u_free_list/buffer_mem[52][6]_i_1_n_0               | reset_IBUF       |                1 |              7 |         7.00 |
+|  clk_IBUF_BUFG | u_rename/u_free_list/buffer_mem[54][6]_i_1_n_0               | reset_IBUF       |                1 |              7 |         7.00 |
+|  clk_IBUF_BUFG | u_rename/u_free_list/buffer_mem[4][6]_i_1_n_0                | reset_IBUF       |                2 |              7 |         3.50 |
+|  clk_IBUF_BUFG | u_rename/u_free_list/buffer_mem[49][6]_i_1_n_0               | reset_IBUF       |                1 |              7 |         7.00 |
+|  clk_IBUF_BUFG | u_rename/u_free_list/buffer_mem[63][6]_i_1_n_0               | reset_IBUF       |                5 |              7 |         1.40 |
+|  clk_IBUF_BUFG | u_rename/u_free_list/buffer_mem[67][6]_i_1_n_0               | reset_IBUF       |                2 |              7 |         3.50 |
+|  clk_IBUF_BUFG | u_rename/u_free_list/buffer_mem[43][6]_i_1_n_0               | reset_IBUF       |                2 |              7 |         3.50 |
+|  clk_IBUF_BUFG | u_rename/u_free_list/buffer_mem[64][6]_i_1_n_0               | reset_IBUF       |                1 |              7 |         7.00 |
+|  clk_IBUF_BUFG | u_rename/u_free_list/buffer_mem[72][6]_i_1_n_0               | reset_IBUF       |                1 |              7 |         7.00 |
+|  clk_IBUF_BUFG | u_rename/u_free_list/buffer_mem[73][6]_i_1_n_0               | reset_IBUF       |                4 |              7 |         1.75 |
+|  clk_IBUF_BUFG | u_rename/u_free_list/buffer_mem[68][6]_i_1_n_0               | reset_IBUF       |                1 |              7 |         7.00 |
+|  clk_IBUF_BUFG | u_rename/u_free_list/buffer_mem[87][6]_i_1_n_0               | reset_IBUF       |                4 |              7 |         1.75 |
+|  clk_IBUF_BUFG | u_rename/u_free_list/buffer_mem[95][6]_i_1_n_0               | reset_IBUF       |                6 |              7 |         1.17 |
+|  clk_IBUF_BUFG | u_rename/u_free_list/buffer_mem[94][6]_i_1_n_0               | reset_IBUF       |                2 |              7 |         3.50 |
+|  clk_IBUF_BUFG | u_rename/u_free_list/buffer_mem[8][6]_i_1_n_0                | reset_IBUF       |                3 |              7 |         2.33 |
+|  clk_IBUF_BUFG | u_rename/u_free_list/buffer_mem[84][6]_i_1_n_0               | reset_IBUF       |                1 |              7 |         7.00 |
+|  clk_IBUF_BUFG | u_rename/u_free_list/buffer_mem[89][6]_i_1_n_0               | reset_IBUF       |                1 |              7 |         7.00 |
+|  clk_IBUF_BUFG | u_rename/u_free_list/buffer_mem[90][6]_i_1_n_0               | reset_IBUF       |                3 |              7 |         2.33 |
+|  clk_IBUF_BUFG | u_rename/u_free_list/buffer_mem[9][6]_i_1_n_0                | reset_IBUF       |                5 |              7 |         1.40 |
+|  clk_IBUF_BUFG | u_rename/u_free_list/buffer_mem[82][6]_i_1_n_0               | reset_IBUF       |                1 |              7 |         7.00 |
+|  clk_IBUF_BUFG | u_rename/u_free_list/buffer_mem[85][6]_i_1_n_0               | reset_IBUF       |                3 |              7 |         2.33 |
+|  clk_IBUF_BUFG | u_rename/u_free_list/buffer_mem[86][6]_i_1_n_0               | reset_IBUF       |                3 |              7 |         2.33 |
+|  clk_IBUF_BUFG | u_rename/u_free_list/buffer_mem[92][6]_i_1_n_0               | reset_IBUF       |                1 |              7 |         7.00 |
+|  clk_IBUF_BUFG | u_rename/u_free_list/buffer_mem[88][6]_i_1_n_0               | reset_IBUF       |                2 |              7 |         3.50 |
+|  clk_IBUF_BUFG | u_rename/u_free_list/buffer_mem[93][6]_i_1_n_0               | reset_IBUF       |                3 |              7 |         2.33 |
+|  clk_IBUF_BUFG | u_rename/u_free_list/buffer_mem[83][6]_i_1_n_0               | reset_IBUF       |                2 |              7 |         3.50 |
+|  clk_IBUF_BUFG | u_rename/u_free_list/buffer_mem[80][6]_i_1_n_0               | reset_IBUF       |                2 |              7 |         3.50 |
+|  clk_IBUF_BUFG | u_rename/u_free_list/buffer_mem[91][6]_i_1_n_0               | reset_IBUF       |                1 |              7 |         7.00 |
+|  clk_IBUF_BUFG | u_skid_decode_rename/E[0]                                    | reset_IBUF       |                3 |              7 |         2.33 |
+|  clk_IBUF_BUFG | u_skid_decode_rename/br_mispredict_o_reg_28[0]               | reset_IBUF       |                5 |              7 |         1.40 |
+|  clk_IBUF_BUFG | u_skid_decode_rename/br_mispredict_o_reg_23[0]               | reset_IBUF       |                5 |              7 |         1.40 |
+|  clk_IBUF_BUFG | u_skid_decode_rename/br_mispredict_o_reg_25[0]               | reset_IBUF       |                3 |              7 |         2.33 |
+|  clk_IBUF_BUFG | u_skid_decode_rename/br_mispredict_o_reg_15[0]               | reset_IBUF       |                6 |              7 |         1.17 |
+|  clk_IBUF_BUFG | u_skid_decode_rename/br_mispredict_o_reg_14[0]               | reset_IBUF       |                5 |              7 |         1.40 |
+|  clk_IBUF_BUFG | u_skid_decode_rename/br_mispredict_o_reg_20[0]               | reset_IBUF       |                5 |              7 |         1.40 |
+|  clk_IBUF_BUFG | u_skid_decode_rename/br_mispredict_o_reg_24[0]               | reset_IBUF       |                6 |              7 |         1.17 |
+|  clk_IBUF_BUFG | u_skid_decode_rename/br_mispredict_o_reg_26[0]               | reset_IBUF       |                5 |              7 |         1.40 |
+|  clk_IBUF_BUFG | u_skid_decode_rename/br_mispredict_o_reg_1[0]                | reset_IBUF       |                5 |              7 |         1.40 |
+|  clk_IBUF_BUFG | u_skid_decode_rename/br_mispredict_o_reg_27[0]               | reset_IBUF       |                6 |              7 |         1.17 |
+|  clk_IBUF_BUFG | u_dispatch/u_rob/br_mispredict_o_reg[0]                      | reset_IBUF       |                6 |              8 |         1.33 |
+|  clk_IBUF_BUFG | u_dispatch/u_rob/rob93_out                                   | reset_IBUF       |                3 |              8 |         2.67 |
+|  clk_IBUF_BUFG | u_dispatch/u_rob/rob57_out                                   | reset_IBUF       |                7 |              8 |         1.14 |
+|  clk_IBUF_BUFG | u_dispatch/u_rob/rob33_out                                   | reset_IBUF       |                3 |              8 |         2.67 |
+|  clk_IBUF_BUFG | u_dispatch/u_rob/rob41_out                                   | reset_IBUF       |                5 |              8 |         1.60 |
+|  clk_IBUF_BUFG | u_dispatch/u_rob/rob77_out                                   | reset_IBUF       |                2 |              8 |         4.00 |
+|  clk_IBUF_BUFG | u_dispatch/u_rob/rob89_out                                   | reset_IBUF       |                2 |              8 |         4.00 |
+|  clk_IBUF_BUFG | u_dispatch/u_rob/rob73_out                                   | reset_IBUF       |                2 |              8 |         4.00 |
+|  clk_IBUF_BUFG | u_dispatch/u_rob/rob49_out                                   | reset_IBUF       |                4 |              8 |         2.00 |
+|  clk_IBUF_BUFG | u_dispatch/u_rob/rob65_out                                   | reset_IBUF       |                5 |              8 |         1.60 |
+|  clk_IBUF_BUFG | u_dispatch/u_rob/rob81_out                                   | reset_IBUF       |                3 |              8 |         2.67 |
+|  clk_IBUF_BUFG | u_dispatch/u_rob/rob61_out                                   | reset_IBUF       |                4 |              8 |         2.00 |
+|  clk_IBUF_BUFG | u_dispatch/u_rob/rob85_out                                   | reset_IBUF       |                2 |              8 |         4.00 |
+|  clk_IBUF_BUFG | u_dispatch/u_rob/rob53_out                                   | reset_IBUF       |                3 |              8 |         2.67 |
+|  clk_IBUF_BUFG | u_dispatch/u_rob/rob69_out                                   | reset_IBUF       |                6 |              8 |         1.33 |
+|  clk_IBUF_BUFG | u_dispatch/u_rob/rob37_out                                   | reset_IBUF       |                5 |              8 |         1.60 |
+|  clk_IBUF_BUFG | u_dispatch/u_rob/rob45_out                                   | reset_IBUF       |                3 |              8 |         2.67 |
+|  clk_IBUF_BUFG | u_skid_decode_rename/br_mispredict_o_reg_30[0]               | reset_IBUF       |                3 |              8 |         2.67 |
+|  clk_IBUF_BUFG | u_bp/p_0_in__0[4]                                            | reset_IBUF       |                6 |             30 |         5.00 |
+|  clk_IBUF_BUFG | u_bp/p_0_in__0[7]                                            | reset_IBUF       |                8 |             30 |         3.75 |
+|  clk_IBUF_BUFG | u_bp/p_0_in__0[1]                                            | reset_IBUF       |                7 |             30 |         4.29 |
+|  clk_IBUF_BUFG | u_bp/p_0_in__0[0]                                            | reset_IBUF       |                8 |             30 |         3.75 |
+|  clk_IBUF_BUFG | u_bp/p_0_in__0[2]                                            | reset_IBUF       |                5 |             30 |         6.00 |
+|  clk_IBUF_BUFG | u_bp/p_0_in__0[3]                                            | reset_IBUF       |                6 |             30 |         5.00 |
+|  clk_IBUF_BUFG | u_bp/p_0_in__0[6]                                            | reset_IBUF       |                7 |             30 |         4.29 |
+|  clk_IBUF_BUFG | u_dispatch/u_rs_lsu/dmem_re                                  |                  |                7 |             30 |         4.29 |
+|  clk_IBUF_BUFG | u_bp/p_0_in__0[5]                                            | reset_IBUF       |               10 |             30 |         3.00 |
+|  clk_IBUF_BUFG | u_branch/wb_dst_prf_o_reg[5]_rep__0_0[0]                     | reset_IBUF       |               21 |             32 |         1.52 |
+|  clk_IBUF_BUFG | u_branch/wb_dst_prf_o_reg[3]_rep__1_5[0]                     | reset_IBUF       |               24 |             32 |         1.33 |
+|  clk_IBUF_BUFG | u_branch/wb_dst_prf_o_reg[2]_rep__7_5[0]                     | reset_IBUF       |               23 |             32 |         1.39 |
+|  clk_IBUF_BUFG | u_branch/wb_dst_prf_o_reg[3]_rep__1_6[0]                     | reset_IBUF       |               22 |             32 |         1.45 |
+|  clk_IBUF_BUFG | u_branch/wb_dst_prf_o_reg[4]_rep__1_0[0]                     | reset_IBUF       |               21 |             32 |         1.52 |
+|  clk_IBUF_BUFG | u_branch/wb_dst_prf_o_reg[4]_rep__4_1[0]                     | reset_IBUF       |               16 |             32 |         2.00 |
+|  clk_IBUF_BUFG | u_branch/wb_dst_prf_o_reg[6]_rep_0[0]                        | reset_IBUF       |               21 |             32 |         1.52 |
+|  clk_IBUF_BUFG | u_branch/wb_dst_prf_o_reg[3]_rep__2_3[0]                     | reset_IBUF       |               22 |             32 |         1.45 |
+|  clk_IBUF_BUFG | u_branch/wb_dst_prf_o_reg[6]_rep__1_3[0]                     | reset_IBUF       |               21 |             32 |         1.52 |
+|  clk_IBUF_BUFG | u_branch/wb_dst_prf_o_reg[3]_rep__1_0[0]                     | reset_IBUF       |               21 |             32 |         1.52 |
+|  clk_IBUF_BUFG | u_alu/wb_dst_prf_o_reg[1]_rep__0_10[0]                       | reset_IBUF       |               22 |             32 |         1.45 |
+|  clk_IBUF_BUFG | u_branch/wb_dst_prf_o_reg[5]_rep__3_0[0]                     | reset_IBUF       |               25 |             32 |         1.28 |
+|  clk_IBUF_BUFG | u_branch/wb_dst_prf_o_reg[6]_1[0]                            | reset_IBUF       |               24 |             32 |         1.33 |
+|  clk_IBUF_BUFG | u_branch/wb_dst_prf_o_reg[4]_rep__4_0[0]                     | reset_IBUF       |               18 |             32 |         1.78 |
+|  clk_IBUF_BUFG | u_branch/wb_dst_prf_o_reg[6]_3[0]                            | reset_IBUF       |               19 |             32 |         1.68 |
+|  clk_IBUF_BUFG | u_branch/wb_dst_prf_o_reg[5]_rep__0_4[0]                     | reset_IBUF       |               19 |             32 |         1.68 |
+|  clk_IBUF_BUFG | u_branch/wb_dst_prf_o_reg[5]_rep__4_10[0]                    | reset_IBUF       |               20 |             32 |         1.60 |
+|  clk_IBUF_BUFG | u_branch/wb_dst_prf_o_reg[6]_4[0]                            | reset_IBUF       |               25 |             32 |         1.28 |
+|  clk_IBUF_BUFG | u_branch/wb_dst_prf_o_reg[5]_rep__2_19[0]                    | reset_IBUF       |               20 |             32 |         1.60 |
+|  clk_IBUF_BUFG | u_alu/wb_dst_prf_o_reg[0]_rep_11[0]                          | reset_IBUF       |               26 |             32 |         1.23 |
+|  clk_IBUF_BUFG | u_alu/wb_dst_prf_o_reg[0]_rep_13[0]                          | reset_IBUF       |               20 |             32 |         1.60 |
+|  clk_IBUF_BUFG | u_alu/wb_dst_prf_o_reg[0]_rep_14[0]                          | reset_IBUF       |               22 |             32 |         1.45 |
+|  clk_IBUF_BUFG | u_alu/wb_dst_prf_o_reg[0]_rep_15[0]                          | reset_IBUF       |               23 |             32 |         1.39 |
+|  clk_IBUF_BUFG | u_alu/wb_dst_prf_o_reg[0]_rep_16[0]                          | reset_IBUF       |               19 |             32 |         1.68 |
+|  clk_IBUF_BUFG | u_alu/wb_dst_prf_o_reg[0]_rep_1[0]                           | reset_IBUF       |               19 |             32 |         1.68 |
+|  clk_IBUF_BUFG | u_alu/wb_dst_prf_o_reg[5]_1[0]                               | reset_IBUF       |               25 |             32 |         1.28 |
+|  clk_IBUF_BUFG | u_alu/wb_dst_prf_o_reg[0]_rep_5[0]                           | reset_IBUF       |               23 |             32 |         1.39 |
+|  clk_IBUF_BUFG | u_alu/wb_dst_prf_o_reg[1]_rep__0_9[0]                        | reset_IBUF       |               19 |             32 |         1.68 |
+|  clk_IBUF_BUFG | u_alu/wb_dst_prf_o_reg[0]_rep_2[0]                           | reset_IBUF       |               15 |             32 |         2.13 |
+|  clk_IBUF_BUFG | u_alu/wb_dst_prf_o_reg[1]_rep__0_4[0]                        | reset_IBUF       |               19 |             32 |         1.68 |
+|  clk_IBUF_BUFG | u_alu/wb_dst_prf_o_reg[0]_rep_9[0]                           | reset_IBUF       |               26 |             32 |         1.23 |
+|  clk_IBUF_BUFG | u_alu/wb_dst_prf_o_reg[2]_rep__0_13[0]                       | reset_IBUF       |               24 |             32 |         1.33 |
+|  clk_IBUF_BUFG | u_alu/wb_dst_prf_o_reg[2]_rep__0_7[0]                        | reset_IBUF       |               20 |             32 |         1.60 |
+|  clk_IBUF_BUFG | u_alu/wb_dst_prf_o_reg[2]_rep__0_5[0]                        | reset_IBUF       |               16 |             32 |         2.00 |
+|  clk_IBUF_BUFG | u_alu/wb_dst_prf_o_reg[3]_rep__0_3[0]                        | reset_IBUF       |               22 |             32 |         1.45 |
+|  clk_IBUF_BUFG | u_alu/wb_dst_prf_o_reg[0]_rep_8[0]                           | reset_IBUF       |               22 |             32 |         1.45 |
+|  clk_IBUF_BUFG | u_alu/wb_dst_prf_o_reg[5]_11[0]                              | reset_IBUF       |               16 |             32 |         2.00 |
+|  clk_IBUF_BUFG | u_alu/wb_dst_prf_o_reg[5]_3[0]                               | reset_IBUF       |               19 |             32 |         1.68 |
+|  clk_IBUF_BUFG | u_alu/wb_dst_prf_o_reg[5]_8[0]                               | reset_IBUF       |               21 |             32 |         1.52 |
+|  clk_IBUF_BUFG | u_alu/wb_dst_prf_o_reg[5]_rep[0]                             | reset_IBUF       |               22 |             32 |         1.45 |
+|  clk_IBUF_BUFG | u_alu/wb_dst_prf_o_reg[1]_rep__0_20[0]                       | reset_IBUF       |               20 |             32 |         1.60 |
+|  clk_IBUF_BUFG | u_alu/wb_dst_prf_o_reg[4]_3[0]                               | reset_IBUF       |               17 |             32 |         1.88 |
+|  clk_IBUF_BUFG | u_alu/wb_dst_prf_o_reg[3]_rep__0_7[0]                        | reset_IBUF       |               23 |             32 |         1.39 |
+|  clk_IBUF_BUFG | u_alu/wb_dst_prf_o_reg[4]_14[0]                              | reset_IBUF       |               24 |             32 |         1.33 |
+|  clk_IBUF_BUFG | u_alu/wb_dst_prf_o_reg[6]_0[0]                               | reset_IBUF       |               26 |             32 |         1.23 |
+|  clk_IBUF_BUFG | u_alu/wb_dst_prf_o_reg[2]_rep__0_16[0]                       | reset_IBUF       |               20 |             32 |         1.60 |
+|  clk_IBUF_BUFG | u_alu/wb_dst_prf_o_reg[0]_rep__4[0]                          | reset_IBUF       |               21 |             32 |         1.52 |
+|  clk_IBUF_BUFG | u_alu/wb_dst_prf_o_reg[2]_rep__0_10[0]                       | reset_IBUF       |               20 |             32 |         1.60 |
+|  clk_IBUF_BUFG | u_alu/wb_dst_prf_o_reg[1]_rep__0_25[0]                       | reset_IBUF       |               20 |             32 |         1.60 |
+|  clk_IBUF_BUFG | u_alu/wb_dst_prf_o_reg[4]_13[0]                              | reset_IBUF       |               22 |             32 |         1.45 |
+|  clk_IBUF_BUFG | u_alu/wb_dst_prf_o_reg[1]_rep__0_7[0]                        | reset_IBUF       |               22 |             32 |         1.45 |
+|  clk_IBUF_BUFG | u_alu/wb_dst_prf_o_reg[2]_rep__0_17[0]                       | reset_IBUF       |               22 |             32 |         1.45 |
+|  clk_IBUF_BUFG | u_alu/wb_dst_prf_o_reg[0]_rep_6[0]                           | reset_IBUF       |               23 |             32 |         1.39 |
+|  clk_IBUF_BUFG | u_alu/wb_dst_prf_o_reg[0]_rep_4[0]                           | reset_IBUF       |               20 |             32 |         1.60 |
+|  clk_IBUF_BUFG | u_alu/wb_dst_prf_o_reg[1]_rep__0_15[0]                       | reset_IBUF       |               22 |             32 |         1.45 |
+|  clk_IBUF_BUFG | u_alu/wb_dst_prf_o_reg[5]_13[0]                              | reset_IBUF       |               23 |             32 |         1.39 |
+|  clk_IBUF_BUFG | u_alu/wb_dst_prf_o_reg[2]_rep__0_1[0]                        | reset_IBUF       |               18 |             32 |         1.78 |
+|  clk_IBUF_BUFG | u_alu/wb_dst_prf_o_reg[3]_rep_0[0]                           | reset_IBUF       |               19 |             32 |         1.68 |
+|  clk_IBUF_BUFG | u_alu/wb_dst_prf_o_reg[3]_rep__0_11[0]                       | reset_IBUF       |               19 |             32 |         1.68 |
+|  clk_IBUF_BUFG | u_alu/wb_dst_prf_o_reg[2]_rep__0_14[0]                       | reset_IBUF       |               25 |             32 |         1.28 |
+|  clk_IBUF_BUFG | u_alu/wb_dst_prf_o_reg[3]_rep__0_12[0]                       | reset_IBUF       |               21 |             32 |         1.52 |
+|  clk_IBUF_BUFG | u_alu/wb_dst_prf_o_reg[4]_16[0]                              | reset_IBUF       |               18 |             32 |         1.78 |
+|  clk_IBUF_BUFG | u_alu/wb_dst_prf_o_reg[6]_3[0]                               | reset_IBUF       |               22 |             32 |         1.45 |
+|  clk_IBUF_BUFG | u_alu/wb_dst_prf_o_reg[0]_rep__5[0]                          | reset_IBUF       |               21 |             32 |         1.52 |
+|  clk_IBUF_BUFG | u_alu/wb_dst_prf_o_reg[1]_rep__0_23[0]                       | reset_IBUF       |               21 |             32 |         1.52 |
+|  clk_IBUF_BUFG | u_alu/wb_dst_prf_o_reg[3]_rep__0_2[0]                        | reset_IBUF       |               20 |             32 |         1.60 |
+|  clk_IBUF_BUFG | u_alu/wb_dst_prf_o_reg[1]_rep__0_8[0]                        | reset_IBUF       |               19 |             32 |         1.68 |
+|  clk_IBUF_BUFG | u_alu/wb_dst_prf_o_reg[1]_rep__0_5[0]                        | reset_IBUF       |               20 |             32 |         1.60 |
+|  clk_IBUF_BUFG | u_alu/wb_dst_prf_o_reg[1]_rep__0_6[0]                        | reset_IBUF       |               24 |             32 |         1.33 |
+|  clk_IBUF_BUFG | u_alu/wb_dst_prf_o_reg[2]_rep__0_6[0]                        | reset_IBUF       |               23 |             32 |         1.39 |
+|  clk_IBUF_BUFG | u_alu/wb_dst_prf_o_reg[2]_rep__0_18[0]                       | reset_IBUF       |               19 |             32 |         1.68 |
+|  clk_IBUF_BUFG | u_alu/wb_dst_prf_o_reg[4]_rep__1[0]                          | reset_IBUF       |               18 |             32 |         1.78 |
+|  clk_IBUF_BUFG | u_alu/wb_dst_prf_o_reg[0]_rep_3[0]                           | reset_IBUF       |               26 |             32 |         1.23 |
+|  clk_IBUF_BUFG | u_alu/wb_dst_prf_o_reg[2]_rep__0_19[0]                       | reset_IBUF       |               20 |             32 |         1.60 |
+|  clk_IBUF_BUFG | u_alu/wb_dst_prf_o_reg[1]_rep__0_22[0]                       | reset_IBUF       |               22 |             32 |         1.45 |
+|  clk_IBUF_BUFG | u_alu/wb_dst_prf_o_reg[2]_rep__0_4[0]                        | reset_IBUF       |               20 |             32 |         1.60 |
+|  clk_IBUF_BUFG | u_alu/wb_dst_prf_o_reg[3]_rep__0_15[0]                       | reset_IBUF       |               24 |             32 |         1.33 |
+|  clk_IBUF_BUFG | u_alu/wb_dst_prf_o_reg[4]_10[0]                              | reset_IBUF       |               19 |             32 |         1.68 |
+|  clk_IBUF_BUFG | u_alu/wb_dst_prf_o_reg[5]_5[0]                               | reset_IBUF       |               26 |             32 |         1.23 |
+|  clk_IBUF_BUFG | u_alu/wb_dst_prf_o_reg[2]_rep__0_3[0]                        | reset_IBUF       |               23 |             32 |         1.39 |
+|  clk_IBUF_BUFG | u_alu/wb_dst_prf_o_reg[6]_7[0]                               | reset_IBUF       |               20 |             32 |         1.60 |
+|  clk_IBUF_BUFG | u_alu/wb_dst_prf_o_reg[6]_9[0]                               | reset_IBUF       |               21 |             32 |         1.52 |
+|  clk_IBUF_BUFG | u_alu/wb_dst_prf_o_reg[6]_5[0]                               | reset_IBUF       |               20 |             32 |         1.60 |
+|  clk_IBUF_BUFG | u_alu/E[0]                                                   | reset_IBUF       |               24 |             32 |         1.33 |
+|  clk_IBUF_BUFG | u_lsu/wb_dst_prf_o_reg[2]_rep__0_9[0]                        | reset_IBUF       |               20 |             32 |         1.60 |
+|  clk_IBUF_BUFG | u_lsu/wb_dst_prf_o_reg[5]_rep__0_7[0]                        | reset_IBUF       |               24 |             32 |         1.33 |
+|  clk_IBUF_BUFG | u_lsu/wb_dst_prf_o_reg[1]_rep__0_1[0]                        | reset_IBUF       |               21 |             32 |         1.52 |
+|  clk_IBUF_BUFG | u_lsu/wb_dst_prf_o_reg[3]_rep_3[0]                           | reset_IBUF       |               25 |             32 |         1.28 |
+|  clk_IBUF_BUFG | u_lsu/wb_dst_prf_o_reg[3]_rep__0_10[0]                       | reset_IBUF       |               23 |             32 |         1.39 |
+|  clk_IBUF_BUFG | u_lsu/wb_dst_prf_o_reg[4]_rep__1_13[0]                       | reset_IBUF       |               31 |             32 |         1.03 |
+|  clk_IBUF_BUFG | u_lsu/wb_dst_prf_o_reg[1]_rep__0_2[0]                        | reset_IBUF       |               23 |             32 |         1.39 |
+|  clk_IBUF_BUFG | u_skid_fetch_decode/E[0]                                     | reset_IBUF       |               14 |             32 |         2.29 |
+|  clk_IBUF_BUFG | u_lsu/wb_dst_prf_o_reg[5]_rep_9[0]                           | reset_IBUF       |               27 |             32 |         1.19 |
+|  clk_IBUF_BUFG | u_lsu/wb_dst_prf_o_reg[5]_rep__1_2[0]                        | reset_IBUF       |               21 |             32 |         1.52 |
+|  clk_IBUF_BUFG | u_lsu/wb_dst_prf_o_reg[1]_rep__0_3[0]                        | reset_IBUF       |               22 |             32 |         1.45 |
+|  clk_IBUF_BUFG | u_lsu/wb_dst_prf_o_reg[3]_rep__0_8[0]                        | reset_IBUF       |               18 |             32 |         1.78 |
+|  clk_IBUF_BUFG | u_lsu/wb_dst_prf_o_reg[2]_rep__1_1[0]                        | reset_IBUF       |               24 |             32 |         1.33 |
+|  clk_IBUF_BUFG | u_lsu/wb_dst_prf_o_reg[4]_rep__1_9[0]                        | reset_IBUF       |               20 |             32 |         1.60 |
+|  clk_IBUF_BUFG | u_lsu/wb_dst_prf_o_reg[6]_22[0]                              | reset_IBUF       |               19 |             32 |         1.68 |
+|  clk_IBUF_BUFG | u_lsu/wb_dst_prf_o_reg[6]_9[0]                               | reset_IBUF       |               25 |             32 |         1.28 |
+|  clk_IBUF_BUFG | u_lsu/wb_dst_prf_o_reg[6]_24[0]                              | reset_IBUF       |               23 |             32 |         1.39 |
+|  clk_IBUF_BUFG | u_lsu/wb_dst_prf_o_reg[6]_rep__1_14[0]                       | reset_IBUF       |               24 |             32 |         1.33 |
+|  clk_IBUF_BUFG | u_lsu/wb_dst_prf_o_reg[6]_rep__4[0]                          | reset_IBUF       |               25 |             32 |         1.28 |
+|  clk_IBUF_BUFG | u_branch/E[0]                                                | reset_IBUF       |               18 |             32 |         1.78 |
+|  clk_IBUF_BUFG | u_branch/wb_dst_prf_o_reg[2]_rep__3_0[0]                     | reset_IBUF       |               19 |             32 |         1.68 |
+|  clk_IBUF_BUFG | u_branch/wb_dst_prf_o_reg[2]_rep__3_1[0]                     | reset_IBUF       |               18 |             32 |         1.78 |
+|  clk_IBUF_BUFG | u_branch/wb_dst_prf_o_reg[2]_rep__4_0[0]                     | reset_IBUF       |               26 |             32 |         1.23 |
+|  clk_IBUF_BUFG | u_branch/wb_dst_prf_o_reg[2]_rep__4_2[0]                     | reset_IBUF       |               23 |             32 |         1.39 |
+|  clk_IBUF_BUFG | u_branch/wb_dst_prf_o_reg[0]_rep__8_0[0]                     | reset_IBUF       |               25 |             32 |         1.28 |
+|  clk_IBUF_BUFG | u_branch/wb_dst_prf_o_reg[1]_rep__4_2[0]                     | reset_IBUF       |               23 |             32 |         1.39 |
+|  clk_IBUF_BUFG | u_branch/wb_dst_prf_o_reg[1]_rep__6_0[0]                     | reset_IBUF       |               24 |             32 |         1.33 |
+|  clk_IBUF_BUFG | u_branch/wb_dst_prf_o_reg[2]_rep__2_1[0]                     | reset_IBUF       |               24 |             32 |         1.33 |
+|  clk_IBUF_BUFG | u_branch/wb_dst_prf_o_reg[2]_rep__7_0[0]                     | reset_IBUF       |               16 |             32 |         2.00 |
+|  clk_IBUF_BUFG | u_branch/wb_dst_prf_o_reg[2]_rep__7_2[0]                     | reset_IBUF       |               26 |             32 |         1.23 |
+|  clk_IBUF_BUFG | u_branch/wb_dst_prf_o_reg[0]_0[0]                            | reset_IBUF       |               22 |             32 |         1.45 |
+|  clk_IBUF_BUFG | u_branch/wb_dst_prf_o_reg[0]_rep__9_0[0]                     | reset_IBUF       |               22 |             32 |         1.45 |
+|  clk_IBUF_BUFG | u_branch/wb_dst_prf_o_reg[0]_rep__5_0[0]                     | reset_IBUF       |               18 |             32 |         1.78 |
+|  clk_IBUF_BUFG | u_branch/wb_dst_prf_o_reg[0]_rep__5_2[0]                     | reset_IBUF       |               24 |             32 |         1.33 |
+|  clk_IBUF_BUFG | u_branch/wb_dst_prf_o_reg[1]_rep__3_0[0]                     | reset_IBUF       |               20 |             32 |         1.60 |
+|  clk_IBUF_BUFG | u_branch/wb_dst_prf_o_reg[1]_rep__4_1[0]                     | reset_IBUF       |               21 |             32 |         1.52 |
+|  clk_IBUF_BUFG | u_branch/wb_dst_prf_o_reg[1]_rep__7_0[0]                     | reset_IBUF       |               20 |             32 |         1.60 |
+|  clk_IBUF_BUFG | u_branch/wb_dst_prf_o_reg[1]_rep__9_0[0]                     | reset_IBUF       |               22 |             32 |         1.45 |
+|  clk_IBUF_BUFG | u_branch/wb_dst_prf_o_reg[2]_rep__0_6[0]                     | reset_IBUF       |               18 |             32 |         1.78 |
+|  clk_IBUF_BUFG | u_branch/wb_dst_prf_o_reg[0]_rep__1_0[0]                     | reset_IBUF       |               21 |             32 |         1.52 |
+|  clk_IBUF_BUFG | u_branch/wb_dst_prf_o_reg[2]_rep__1_0[0]                     | reset_IBUF       |               16 |             32 |         2.00 |
+|  clk_IBUF_BUFG | u_branch/wb_dst_prf_o_reg[2]_rep__2_3[0]                     | reset_IBUF       |               20 |             32 |         1.60 |
+|  clk_IBUF_BUFG | u_branch/wb_dst_prf_o_reg[3]_rep__0_2[0]                     | reset_IBUF       |               19 |             32 |         1.68 |
+|  clk_IBUF_BUFG | u_branch/wb_dst_prf_o_reg[4]_rep__3_1[0]                     | reset_IBUF       |               23 |             32 |         1.39 |
+|  clk_IBUF_BUFG | u_branch/wb_dst_prf_o_reg[3]_rep__0_7[0]                     | reset_IBUF       |               20 |             32 |         1.60 |
+|  clk_IBUF_BUFG | u_bp/is_jalr_r0_out                                          | reset_IBUF       |                9 |             33 |         3.67 |
+|  clk_IBUF_BUFG | u_bp/is_jalr_r6_out                                          | reset_IBUF       |               14 |             33 |         2.36 |
+|  clk_IBUF_BUFG | u_bp/is_jalr_r9_out                                          | reset_IBUF       |               10 |             33 |         3.30 |
+|  clk_IBUF_BUFG | u_bp/is_jalr_r15_out                                         | reset_IBUF       |               13 |             33 |         2.54 |
+|  clk_IBUF_BUFG | u_bp/is_jalr_r3_out                                          | reset_IBUF       |               13 |             33 |         2.54 |
+|  clk_IBUF_BUFG | u_bp/is_jalr_r12_out                                         | reset_IBUF       |               12 |             33 |         2.75 |
+|  clk_IBUF_BUFG | u_bp/is_jalr_r21_out                                         | reset_IBUF       |               13 |             33 |         2.54 |
+|  clk_IBUF_BUFG | u_bp/is_jalr_r18_out                                         | reset_IBUF       |               14 |             33 |         2.36 |
+|  clk_IBUF_BUFG | u_dispatch/u_rs_alu/br_mispredict_o_reg_0                    | reset_IBUF       |               28 |             51 |         1.82 |
+|  clk_IBUF_BUFG | u_branch/br_mispredict_o_reg_27[0]                           | reset_IBUF       |               29 |             61 |         2.10 |
+|  clk_IBUF_BUFG | u_branch/br_mispredict_o_reg_24[0]                           | reset_IBUF       |               28 |             61 |         2.18 |
+|  clk_IBUF_BUFG | u_branch/br_mispredict_o_reg_26[0]                           | reset_IBUF       |               26 |             61 |         2.35 |
+|  clk_IBUF_BUFG | u_branch/br_mispredict_o_reg_21[0]                           | reset_IBUF       |               30 |             61 |         2.03 |
+|  clk_IBUF_BUFG | u_branch/br_mispredict_o_reg_23[0]                           | reset_IBUF       |               29 |             61 |         2.10 |
+|  clk_IBUF_BUFG | u_branch/br_mispredict_o_reg_20[0]                           | reset_IBUF       |               30 |             61 |         2.03 |
+|  clk_IBUF_BUFG | u_branch/br_mispredict_o_reg_25[0]                           | reset_IBUF       |               33 |             61 |         1.85 |
+|  clk_IBUF_BUFG | u_branch/br_mispredict_o_reg_22[0]                           | reset_IBUF       |               28 |             61 |         2.18 |
+|  clk_IBUF_BUFG | u_branch/br_mispredict_o_reg_18[0]                           | reset_IBUF       |               26 |             62 |         2.38 |
+|  clk_IBUF_BUFG | u_branch/br_mispredict_o_reg_16[0]                           | reset_IBUF       |               34 |             62 |         1.82 |
+|  clk_IBUF_BUFG | u_branch/br_mispredict_o_reg_19[0]                           | reset_IBUF       |               24 |             62 |         2.58 |
+|  clk_IBUF_BUFG | u_branch/br_mispredict_o_reg_17[0]                           | reset_IBUF       |               29 |             62 |         2.14 |
+|  clk_IBUF_BUFG | u_branch/br_mispredict_o_reg_12[0]                           | reset_IBUF       |               30 |             62 |         2.07 |
+|  clk_IBUF_BUFG | u_branch/br_mispredict_o_reg_15[0]                           | reset_IBUF       |               29 |             62 |         2.14 |
+|  clk_IBUF_BUFG | u_branch/br_mispredict_o_reg_13[0]                           | reset_IBUF       |               31 |             62 |         2.00 |
+|  clk_IBUF_BUFG | u_branch/br_mispredict_o_reg_14[0]                           | reset_IBUF       |               25 |             62 |         2.48 |
+|  clk_IBUF_BUFG | u_lsq/sq[2][word_addr][29]_i_1_n_0                           | reset_IBUF       |               27 |             65 |         2.41 |
+|  clk_IBUF_BUFG | u_lsq/sq[6][word_addr][29]_i_1_n_0                           | reset_IBUF       |               31 |             65 |         2.10 |
+|  clk_IBUF_BUFG | u_lsq/sq[7][word_addr][29]_i_1_n_0                           | reset_IBUF       |               30 |             65 |         2.17 |
+|  clk_IBUF_BUFG | u_lsq/sq[0][word_addr][29]_i_1_n_0                           | reset_IBUF       |               28 |             65 |         2.32 |
+|  clk_IBUF_BUFG | u_lsq/sq[1][word_addr][29]_i_1_n_0                           | reset_IBUF       |               23 |             65 |         2.83 |
+|  clk_IBUF_BUFG | u_lsq/sq[3][word_addr][29]_i_1_n_0                           | reset_IBUF       |               28 |             65 |         2.32 |
+|  clk_IBUF_BUFG | u_lsq/sq[5][word_addr][29]_i_1_n_0                           | reset_IBUF       |               23 |             65 |         2.83 |
+|  clk_IBUF_BUFG | u_lsq/sq[4][word_addr][29]_i_1_n_0                           | reset_IBUF       |               24 |             65 |         2.71 |
+|  clk_IBUF_BUFG | u_skid_fetch_decode/data_skid[97]_i_1_n_0                    | u_branch/bypass0 |               29 |             97 |         3.34 |
+|  clk_IBUF_BUFG | u_skid_fetch_decode/data_reg[97]_i_1_n_0                     | u_branch/bypass0 |               31 |             98 |         3.16 |
+|  clk_IBUF_BUFG | u_branch/br_mispredict_o_reg_10[0]                           | reset_IBUF       |               52 |            123 |         2.37 |
+|  clk_IBUF_BUFG | u_branch/br_mispredict_o_reg_5[0]                            | reset_IBUF       |               74 |            123 |         1.66 |
+|  clk_IBUF_BUFG | u_branch/br_mispredict_o_reg_11[0]                           | reset_IBUF       |               49 |            123 |         2.51 |
+|  clk_IBUF_BUFG | u_branch/br_mispredict_o_reg_4[0]                            | reset_IBUF       |               44 |            123 |         2.80 |
+|  clk_IBUF_BUFG | u_branch/br_mispredict_o_reg_9[0]                            | reset_IBUF       |               57 |            123 |         2.16 |
+|  clk_IBUF_BUFG | u_branch/br_mispredict_o_reg_7[0]                            | reset_IBUF       |               53 |            123 |         2.32 |
+|  clk_IBUF_BUFG | u_branch/br_mispredict_o_reg_6[0]                            | reset_IBUF       |               55 |            123 |         2.24 |
+|  clk_IBUF_BUFG | u_branch/br_mispredict_o_reg_8[0]                            | reset_IBUF       |               59 |            123 |         2.08 |
+|  clk_IBUF_BUFG | u_skid_decode_rename/data_skid[pc][31]_i_1_n_0               | u_branch/bypass0 |               34 |            125 |         3.68 |
+|  clk_IBUF_BUFG | u_skid_decode_rename/valid_reg                               | u_branch/bypass0 |               39 |            126 |         3.23 |
+|  clk_IBUF_BUFG | u_dispatch/u_skid_rn_dispatch/data_skid[micro_op][4]_i_1_n_0 | u_branch/bypass0 |               41 |            133 |         3.24 |
+|  clk_IBUF_BUFG | u_dispatch/u_skid_rn_dispatch/valid_reg                      | u_branch/bypass0 |               49 |            138 |         2.82 |
+|  clk_IBUF_BUFG | u_dispatch/u_rs_br/slots_reg[6][valid]_1                     | reset_IBUF       |               79 |            219 |         2.77 |
+|  clk_IBUF_BUFG | u_rename/u_rob_tag/tag_cur_reg[3]_3[0]                       | reset_IBUF       |               88 |            240 |         2.73 |
+|  clk_IBUF_BUFG | u_rename/u_rob_tag/tag_cur_reg[2]_0[0]                       | reset_IBUF       |              124 |            240 |         1.94 |
+|  clk_IBUF_BUFG | u_rename/u_rob_tag/tag_cur_reg[3]_2[0]                       | reset_IBUF       |               85 |            240 |         2.82 |
+|  clk_IBUF_BUFG | u_rename/u_rob_tag/tag_cur_reg[3]_4[0]                       | reset_IBUF       |               94 |            240 |         2.55 |
+|  clk_IBUF_BUFG | u_rename/u_rob_tag/tag_cur_reg[3]_1[0]                       | reset_IBUF       |               89 |            244 |         2.74 |
+|  clk_IBUF_BUFG | u_rename/u_rob_tag/tag_cur_reg[2]_1[0]                       | reset_IBUF       |               87 |            244 |         2.80 |
+|  clk_IBUF_BUFG | u_rename/u_rob_tag/tag_cur_reg[3]_5[0]                       | reset_IBUF       |               84 |            244 |         2.90 |
+|  clk_IBUF_BUFG | u_rename/u_rob_tag/tag_cur_reg[1]_0[0]                       | reset_IBUF       |              136 |            244 |         1.79 |
+|  clk_IBUF_BUFG | u_rename/u_rob_tag/tag_cur_reg[2]_2[0]                       | reset_IBUF       |               95 |            244 |         2.57 |
+|  clk_IBUF_BUFG | u_rename/u_rob_tag/tag_cur_reg[0]_2[0]                       | reset_IBUF       |               89 |            244 |         2.74 |
+|  clk_IBUF_BUFG | u_rename/u_rob_tag/tag_cur_reg[0]_1[0]                       | reset_IBUF       |              112 |            244 |         2.18 |
+|  clk_IBUF_BUFG | u_rename/u_rob_tag/tag_cur_reg[3]_7[0]                       | reset_IBUF       |              109 |            244 |         2.24 |
+|  clk_IBUF_BUFG | u_rename/u_rob_tag/tag_cur_reg[3]_6[0]                       | reset_IBUF       |               93 |            244 |         2.62 |
+|  clk_IBUF_BUFG | u_rename/u_rob_tag/tag_cur_reg[3]_0[0]                       | reset_IBUF       |               87 |            244 |         2.80 |
+|  clk_IBUF_BUFG | u_rename/u_rob_tag/tag_cur_reg[0]_0[0]                       | reset_IBUF       |               91 |            244 |         2.68 |
+|  clk_IBUF_BUFG | u_rename/u_rob_tag/E[0]                                      | reset_IBUF       |               79 |            244 |         3.09 |
+|  clk_IBUF_BUFG |                                                              | reset_IBUF       |              491 |           1153 |         2.35 |
++----------------+--------------------------------------------------------------+------------------+------------------+----------------+--------------+
+
+

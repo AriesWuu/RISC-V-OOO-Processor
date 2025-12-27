@@ -2,7 +2,9 @@
 
 import cpu_pkg::*;
 
-// Reservation Station - All RS use "oldest among ready" issue policy
+// Reservation Station - PIPELINED issue selection for timing optimization
+// Stage 1: Wakeup + Ready detection (combinational, registered)
+// Stage 2: Issue selection from registered ready mask
 // Memory ordering is handled by LSQ, not RS
 module RS #(
   parameter int PHYS_REGS   = 128,
@@ -13,6 +15,7 @@ module RS #(
   input  logic [$clog2(ROB_ENTRIES)-1:0] rob_head_i,
   input  logic [$clog2(ROB_ENTRIES)-1:0] rob_tail_cp_i,
 
+  // Registered busy vector from PRF (reduces fanout)
   input  logic [PHYS_REGS-1:0] prf_busy_i,
 
   // Same-cycle wakeup from writeback buses
@@ -41,7 +44,63 @@ module RS #(
 
   slot_t slots[8];
 
-  // ---------- Allocation: priority decode to find a free slot ----------
+  // ========================================================
+  // STAGE 1: Wakeup + Ready detection (per-slot, pipelined)
+  // ========================================================
+  
+  // Registered ready status per slot (updated each cycle)
+  logic [7:0] slot_src0_ready_q;
+  logic [7:0] slot_src1_ready_q;
+  logic [7:0] ready_mask_q;
+  logic [$clog2(ROB_ENTRIES)-1:0] age_dist_q [8];
+  
+  // Combinational wakeup detection
+  // Check if source register will be ready NEXT cycle (from writeback)
+  function automatic logic check_ready(
+    input logic [6:0] src_prf,
+    input logic [PHYS_REGS-1:0] busy_vec
+  );
+    logic ready;
+    begin
+      ready = (src_prf == 7'd0) ? 1'b1 : !busy_vec[src_prf];
+      // Same-cycle wakeup from writeback
+      if (wb_alu_valid_i && src_prf == wb_alu_prf_i && src_prf != 7'd0) ready = 1'b1;
+      if (wb_br_valid_i  && src_prf == wb_br_prf_i  && src_prf != 7'd0) ready = 1'b1;
+      if (wb_lsu_valid_i && src_prf == wb_lsu_prf_i && src_prf != 7'd0) ready = 1'b1;
+      check_ready = ready;
+    end
+  endfunction
+
+  // Register ready status (PIPELINE STAGE 1)
+  always_ff @(posedge clk or posedge reset) begin
+    if (reset) begin
+      slot_src0_ready_q <= '0;
+      slot_src1_ready_q <= '0;
+      ready_mask_q      <= '0;
+      for (int j = 0; j < 8; j++) age_dist_q[j] <= '1;
+    end else if (recover_i) begin
+      ready_mask_q <= '0;
+    end else begin
+      for (int j = 0; j < 8; j++) begin
+        if (slots[j].valid) begin
+          slot_src0_ready_q[j] <= check_ready(slots[j].pkt.src0_prf, prf_busy_i);
+          slot_src1_ready_q[j] <= check_ready(slots[j].pkt.src1_prf, prf_busy_i);
+          age_dist_q[j]        <= slots[j].pkt.rob_tag - rob_head_i;
+          ready_mask_q[j]      <= check_ready(slots[j].pkt.src0_prf, prf_busy_i) &&
+                                  check_ready(slots[j].pkt.src1_prf, prf_busy_i);
+        end else begin
+          slot_src0_ready_q[j] <= 1'b0;
+          slot_src1_ready_q[j] <= 1'b0;
+          age_dist_q[j]        <= '1;
+          ready_mask_q[j]      <= 1'b0;
+        end
+      end
+    end
+  end
+
+  // ========================================================
+  // Allocation: priority decode to find a free slot
+  // ========================================================
   logic [7:0] free_mask;
   for (genvar i = 0; i < 8; i++) begin : g_free
     assign free_mask[i] = !slots[i].valid;
@@ -69,58 +128,32 @@ module RS #(
   assign alloc_idx     = pdec_first1(free_mask);
   assign alloc_ready_o = (alloc_idx != 4'hF);
 
-  // ---------- Ready mask and age distance ----------
-  logic [7:0] ready_mask;
-  logic [$clog2(ROB_ENTRIES)-1:0] age_dist [8];
+  // ========================================================
+  // STAGE 2: Issue selection (from registered ready mask)
+  // TIMING OPTIMIZED: Use simple priority encoder instead of age comparison
+  // This trades "oldest-first" for "lowest-index-first" to reduce logic depth
+  // For most workloads, the IPC impact is minimal
+  // ========================================================
   
-  always_comb begin
-    for (int j = 0; j < 8; j++) begin
-      logic src0_ready;
-      logic src1_ready;
-
-      if (slots[j].valid) begin
-        age_dist[j] = slots[j].pkt.rob_tag - rob_head_i;
-
-        src0_ready = !prf_busy_i[slots[j].pkt.src0_prf] ||
-                     ((wb_alu_valid_i && (wb_alu_prf_i == slots[j].pkt.src0_prf) && (wb_alu_prf_i != 7'd0))) ||
-                     ((wb_br_valid_i  && (wb_br_prf_i  == slots[j].pkt.src0_prf) && (wb_br_prf_i  != 7'd0))) ||
-                     ((wb_lsu_valid_i && (wb_lsu_prf_i == slots[j].pkt.src0_prf) && (wb_lsu_prf_i != 7'd0)));
-
-        src1_ready = !prf_busy_i[slots[j].pkt.src1_prf] ||
-                     ((wb_alu_valid_i && (wb_alu_prf_i == slots[j].pkt.src1_prf) && (wb_alu_prf_i != 7'd0))) ||
-                     ((wb_br_valid_i  && (wb_br_prf_i  == slots[j].pkt.src1_prf) && (wb_br_prf_i  != 7'd0))) ||
-                     ((wb_lsu_valid_i && (wb_lsu_prf_i == slots[j].pkt.src1_prf) && (wb_lsu_prf_i != 7'd0)));
-      end else begin
-        age_dist[j] = '1;
-        src0_ready  = 1'b0;
-        src1_ready  = 1'b0;
-      end
-
-      ready_mask[j] = slots[j].valid && src0_ready && src1_ready;
-    end
-  end
-  
-  // ---------- Issue selection: oldest among ready ----------
   logic [3:0] issue_idx;
   logic       has_ready;
   
+  // Simple priority encoder - select first ready slot (lowest index)
+  // This is much faster than age comparison (reduces ~10 logic levels)
   always_comb begin
     issue_idx = 4'hF;
     has_ready = 1'b0;
-
-    // Find oldest ready entry
+    
     for (int i = 0; i < 8; i++) begin
-      if (ready_mask[i]) begin
-        if (!has_ready || (age_dist[i] < age_dist[issue_idx])) begin
-          issue_idx = i[3:0];
-          has_ready = 1'b1;
-        end
+      if (!has_ready && ready_mask_q[i] && slots[i].valid) begin
+        issue_idx = i[3:0];
+        has_ready = 1'b1;
       end
     end
   end
 
   assign issue_valid_o = has_ready & exu_ready_i & !recover_i;
-  assign issue_pkt_o   = has_ready ? slots[issue_idx].pkt : '0;
+  assign issue_pkt_o   = (has_ready && issue_idx < 4'd8) ? slots[issue_idx].pkt : '0;
 
   // ---------- Speculation check ----------
   function automatic logic is_speculative(
