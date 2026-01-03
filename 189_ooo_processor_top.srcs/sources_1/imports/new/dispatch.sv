@@ -187,6 +187,7 @@ module dispatch_module #(
 
     // Raw PRF read data (no bypass inside PRF)
     logic [31:0] alu_src0_data_raw, alu_src1_data_raw;
+    logic [31:0] alu1_src0_data_raw, alu1_src1_data_raw;
     logic [31:0] br_src0_data_raw,  br_src1_data_raw;
     logic [31:0] lsu_src0_data_raw, lsu_src1_data_raw;
 
@@ -203,6 +204,10 @@ module dispatch_module #(
         .wb_alu_en_i      (wb_alu_valid_i),
         .wb_alu_preg_i    (wb_alu_prf_i),
         .wb_alu_data_i    (wb_alu_data_i),
+
+        .wb_alu1_en_i     (wb_alu1_valid_i),
+        .wb_alu1_preg_i   (wb_alu1_prf_i),
+        .wb_alu1_data_i   (wb_alu1_data_i),
 
         .wb_br_en_i       (wb_br_valid_i),
         .wb_br_preg_i     (wb_br_prf_i),
@@ -221,7 +226,7 @@ module dispatch_module #(
         .busy_o           (prf_busy_alu),
         .busy_br_o        (prf_busy_br),
         .busy_lsu_o       (prf_busy_lsu),
-        // Three issue read ports
+        // Four issue read ports
         .iss0_valid_i     (alu_issue_valid_o),
         .iss0_src0_i      (alu_issue_pkt_o.src0_prf),
         .iss0_src1_i      (alu_issue_pkt_o.src1_prf),
@@ -238,7 +243,13 @@ module dispatch_module #(
         .iss2_src0_i      (lsu_issue_pkt_o.src0_prf),
         .iss2_src1_i      (lsu_issue_pkt_o.src1_prf),
         .iss2_r0_o        (lsu_src0_data_raw),
-        .iss2_r1_o        (lsu_src1_data_raw)
+        .iss2_r1_o        (lsu_src1_data_raw),
+
+        .iss3_valid_i     (alu1_issue_valid_o),
+        .iss3_src0_i      (alu1_issue_pkt_o.src0_prf),
+        .iss3_src1_i      (alu1_issue_pkt_o.src1_prf),
+        .iss3_r0_o        (alu1_src0_data_raw),
+        .iss3_r1_o        (alu1_src1_data_raw)
     );
 
     // Apply same-cycle operand bypass here (moved out of PRF)
@@ -274,6 +285,8 @@ module dispatch_module #(
         .prf_busy_i           (prf_busy_alu),  // Use dedicated busy copy for ALU RS
         .wb_alu_valid_i       (wb_alu_valid_i),
         .wb_alu_prf_i         (wb_alu_prf_i),
+        .wb_alu1_valid_i      (wb_alu1_valid_i),
+        .wb_alu1_prf_i        (wb_alu1_prf_i),
         .wb_br_valid_i        (wb_br_valid_i),
         .wb_br_prf_i          (wb_br_prf_i),
         .wb_lsu_valid_i       (wb_lsu_valid_i),
@@ -302,6 +315,8 @@ module dispatch_module #(
         .prf_busy_i           (prf_busy_alu),  // Share busy copy with ALU0
         .wb_alu_valid_i       (wb_alu_valid_i),
         .wb_alu_prf_i         (wb_alu_prf_i),
+        .wb_alu1_valid_i      (wb_alu1_valid_i),
+        .wb_alu1_prf_i        (wb_alu1_prf_i),
         .wb_br_valid_i        (wb_br_valid_i),
         .wb_br_prf_i          (wb_br_prf_i),
         .wb_lsu_valid_i       (wb_lsu_valid_i),
@@ -330,6 +345,8 @@ module dispatch_module #(
         .prf_busy_i           (prf_busy_br),  // Use dedicated busy copy for Branch RS
         .wb_alu_valid_i       (wb_alu_valid_i),
         .wb_alu_prf_i         (wb_alu_prf_i),
+        .wb_alu1_valid_i      (wb_alu1_valid_i),
+        .wb_alu1_prf_i        (wb_alu1_prf_i),
         .wb_br_valid_i        (wb_br_valid_i),
         .wb_br_prf_i          (wb_br_prf_i),
         .wb_lsu_valid_i       (wb_lsu_valid_i),
@@ -358,6 +375,8 @@ module dispatch_module #(
         .prf_busy_i           (prf_busy_lsu),  // Use dedicated busy copy for LSU RS
         .wb_alu_valid_i       (wb_alu_valid_i),
         .wb_alu_prf_i         (wb_alu_prf_i),
+        .wb_alu1_valid_i      (wb_alu1_valid_i),
+        .wb_alu1_prf_i        (wb_alu1_prf_i),
         .wb_br_valid_i        (wb_br_valid_i),
         .wb_br_prf_i          (wb_br_prf_i),
         .wb_lsu_valid_i       (wb_lsu_valid_i),
@@ -400,6 +419,8 @@ module dispatch_module #(
         // Complete signals from EXUs
         .complete_alu_valid_i (wb_alu_valid_i),
         .complete_alu_tag_i   (wb_alu_rob_tag_i),
+        .complete_alu1_valid_i(wb_alu1_valid_i),
+        .complete_alu1_tag_i  (wb_alu1_rob_tag_i),
         .complete_br_valid_i  (complete_br_valid_i),   // Use dedicated completion signal
         .complete_br_tag_i    (complete_br_rob_tag_i), // Use dedicated completion tag
         .complete_lsu_valid_i (wb_lsu_valid_i),

@@ -343,34 +343,48 @@ module top #(
     .rn_pred_target_i (pred_target_rename_out),
     // EXU ready
     .alu_exu_ready_i  (alu_ready),
+    .alu1_exu_ready_i (alu1_ready),
     .br_exu_ready_i   (br_ready),
     .lsu_exu_ready_i  (lsu_ready),
-    // Issue outputs
+    // Issue outputs - ALU0
     .alu_issue_valid_o(alu_issue_valid),
     .alu_issue_pkt_o  (alu_issue_pkt),
     .alu_src0_data_o  (alu_src0_data),
     .alu_src1_data_o  (alu_src1_data),
+    // Issue outputs - ALU1
+    .alu1_issue_valid_o(alu1_issue_valid),
+    .alu1_issue_pkt_o  (alu1_issue_pkt),
+    .alu1_src0_data_o  (alu1_src0_data),
+    .alu1_src1_data_o  (alu1_src1_data),
+    // Issue outputs - Branch
     .br_issue_valid_o (br_issue_valid),
     .br_issue_pkt_o   (br_issue_pkt),
     .br_src0_data_o   (br_src0_data),
     .br_src1_data_o   (br_src1_data),
+    // Issue outputs - LSU
     .lsu_issue_valid_o(lsu_issue_valid),
     .lsu_issue_pkt_o  (lsu_issue_pkt),
     .lsu_src0_data_o  (lsu_src0_data),
     .lsu_src1_data_o  (lsu_src1_data),
-    // Writeback inputs
+    // Writeback inputs - ALU0
     .wb_alu_valid_i   (wb_alu_valid),
     .wb_alu_prf_i     (wb_alu_prf),
     .wb_alu_data_i    (wb_alu_data),
+    .wb_alu_rob_tag_i (wb_alu_rob_tag),
+    // Writeback inputs - ALU1
+    .wb_alu1_valid_i  (wb_alu1_valid),
+    .wb_alu1_prf_i    (wb_alu1_prf),
+    .wb_alu1_data_i   (wb_alu1_data),
+    .wb_alu1_rob_tag_i(wb_alu1_rob_tag),
+    // Writeback inputs - Branch
     .wb_br_valid_i    (wb_br_valid),
     .wb_br_prf_i      (wb_br_prf),
     .wb_br_data_i     (wb_br_data),
+    .wb_br_rob_tag_i  (wb_br_rob_tag),
+    // Writeback inputs - LSU
     .wb_lsu_valid_i   (wb_lsu_valid),
     .wb_lsu_prf_i     (wb_lsu_prf),
     .wb_lsu_data_i    (wb_lsu_data),
-    // ROB tags from writeback
-    .wb_alu_rob_tag_i (wb_alu_rob_tag),
-    .wb_br_rob_tag_i  (wb_br_rob_tag),
     .wb_lsu_rob_tag_i (wb_lsu_rob_tag),
     // Branch completion (separate from writeback - BNE completes but doesn't write)
     .complete_br_valid_i   (complete_br_valid),

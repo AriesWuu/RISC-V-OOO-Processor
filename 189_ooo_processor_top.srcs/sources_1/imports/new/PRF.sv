@@ -7,10 +7,15 @@ module PRF #(
 )(
   input  logic clk,
   input  logic reset,
-  // writeback, multiple ports (ALU, Branch, LSU)
+  // writeback, multiple ports (ALU0, ALU1, Branch, LSU)
   input  logic        wb_alu_en_i,
   input  logic [6:0]  wb_alu_preg_i,
   input  logic [31:0] wb_alu_data_i,
+
+  // Second ALU writeback port
+  input  logic        wb_alu1_en_i,
+  input  logic [6:0]  wb_alu1_preg_i,
+  input  logic [31:0] wb_alu1_data_i,
 
   input  logic        wb_br_en_i,
   input  logic [6:0]  wb_br_preg_i,
@@ -25,13 +30,13 @@ module PRF #(
   input  logic [6:0]  set_busy_preg_i,
   input  logic        clr_busy_en_i,
   input  logic [6:0]  clr_busy_preg_i,
-  
+
   // Replicated busy outputs for each RS (reduces fanout from 48 to 16 per copy)
-  output logic [PHYS_REGS-1:0] busy_o,       // For ALU RS
+  output logic [PHYS_REGS-1:0] busy_o,       // For ALU RS (shared by both ALU0 and ALU1)
   output logic [PHYS_REGS-1:0] busy_br_o,    // For Branch RS
   output logic [PHYS_REGS-1:0] busy_lsu_o,   // For LSU RS
 
-  // three-way issue read ports (2 reads per way)
+  // four-way issue read ports (2 reads per way) - ALU0, ALU1, Branch, LSU
   input  logic        iss0_valid_i,
   input  logic [6:0]  iss0_src0_i, iss0_src1_i,
   output logic [31:0] iss0_r0_o, iss0_r1_o,
@@ -42,7 +47,12 @@ module PRF #(
 
   input  logic        iss2_valid_i,
   input  logic [6:0]  iss2_src0_i, iss2_src1_i,
-  output logic [31:0] iss2_r0_o, iss2_r1_o
+  output logic [31:0] iss2_r0_o, iss2_r1_o,
+
+  // Fourth issue port for ALU1
+  input  logic        iss3_valid_i,
+  input  logic [6:0]  iss3_src0_i, iss3_src1_i,
+  output logic [31:0] iss3_r0_o, iss3_r1_o
 );
   logic [31:0] rf[PHYS_REGS];
   
@@ -65,6 +75,8 @@ module PRF #(
   assign iss1_r1_o = rf[iss1_src1_i];
   assign iss2_r0_o = rf[iss2_src0_i];
   assign iss2_r1_o = rf[iss2_src1_i];
+  assign iss3_r0_o = rf[iss3_src0_i];
+  assign iss3_r1_o = rf[iss3_src1_i];
 
   // ============================================================
   // Unified update logic for all busy copies
@@ -85,6 +97,12 @@ module PRF #(
         busy_alu[wb_alu_preg_i] <= 1'b0;
         busy_br[wb_alu_preg_i]  <= 1'b0;
         busy_lsu[wb_alu_preg_i] <= 1'b0;
+      end
+      if (wb_alu1_en_i && wb_alu1_preg_i != 7'd0) begin
+        rf[wb_alu1_preg_i]       <= wb_alu1_data_i;
+        busy_alu[wb_alu1_preg_i] <= 1'b0;
+        busy_br[wb_alu1_preg_i]  <= 1'b0;
+        busy_lsu[wb_alu1_preg_i] <= 1'b0;
       end
       if (wb_br_en_i && wb_br_preg_i != 7'd0) begin
         rf[wb_br_preg_i]       <= wb_br_data_i;

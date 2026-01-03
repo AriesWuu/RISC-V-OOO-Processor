@@ -25,6 +25,8 @@ module ROB #(
   // Complete signals from execution units (mark instruction as done)
   input  logic        complete_alu_valid_i,
   input  logic [$clog2(ROB_ENTRIES)-1:0] complete_alu_tag_i,
+  input  logic        complete_alu1_valid_i,
+  input  logic [$clog2(ROB_ENTRIES)-1:0] complete_alu1_tag_i,
   input  logic        complete_br_valid_i,
   input  logic [$clog2(ROB_ENTRIES)-1:0] complete_br_tag_i,
   input  logic        complete_lsu_valid_i,
@@ -106,10 +108,13 @@ module ROB #(
       end
       
       tail <= recovery_tail_cp;
-      
+
       // This handles in-flight operations that complete during the recovery cycle
       if (complete_alu_valid_i && rob[complete_alu_tag_i].valid) begin
         rob[complete_alu_tag_i].complete <= 1'b1;
+      end
+      if (complete_alu1_valid_i && rob[complete_alu1_tag_i].valid) begin
+        rob[complete_alu1_tag_i].complete <= 1'b1;
       end
       if (complete_br_valid_i && rob[complete_br_tag_i].valid) begin
         rob[complete_br_tag_i].complete <= 1'b1;
@@ -123,6 +128,9 @@ module ROB #(
       // =====================
       if (complete_alu_valid_i && rob[complete_alu_tag_i].valid) begin
         rob[complete_alu_tag_i].complete <= 1'b1;
+      end
+      if (complete_alu1_valid_i && rob[complete_alu1_tag_i].valid) begin
+        rob[complete_alu1_tag_i].complete <= 1'b1;
       end
       if (complete_br_valid_i && rob[complete_br_tag_i].valid) begin
         rob[complete_br_tag_i].complete <= 1'b1;

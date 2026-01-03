@@ -18,9 +18,11 @@ module RS #(
   // Registered busy vector from PRF (reduces fanout)
   input  logic [PHYS_REGS-1:0] prf_busy_i,
 
-  // Same-cycle wakeup from writeback buses
+  // Same-cycle wakeup from writeback buses (4-way)
   input  logic        wb_alu_valid_i,
   input  logic [6:0]  wb_alu_prf_i,
+  input  logic        wb_alu1_valid_i,
+  input  logic [6:0]  wb_alu1_prf_i,
   input  logic        wb_br_valid_i,
   input  logic [6:0]  wb_br_prf_i,
   input  logic        wb_lsu_valid_i,
@@ -63,10 +65,11 @@ module RS #(
     logic ready;
     begin
       ready = (src_prf == 7'd0) ? 1'b1 : !busy_vec[src_prf];
-      // Same-cycle wakeup from writeback
-      if (wb_alu_valid_i && src_prf == wb_alu_prf_i && src_prf != 7'd0) ready = 1'b1;
-      if (wb_br_valid_i  && src_prf == wb_br_prf_i  && src_prf != 7'd0) ready = 1'b1;
-      if (wb_lsu_valid_i && src_prf == wb_lsu_prf_i && src_prf != 7'd0) ready = 1'b1;
+      // Same-cycle wakeup from writeback (4-way)
+      if (wb_alu_valid_i  && src_prf == wb_alu_prf_i  && src_prf != 7'd0) ready = 1'b1;
+      if (wb_alu1_valid_i && src_prf == wb_alu1_prf_i && src_prf != 7'd0) ready = 1'b1;
+      if (wb_br_valid_i   && src_prf == wb_br_prf_i   && src_prf != 7'd0) ready = 1'b1;
+      if (wb_lsu_valid_i  && src_prf == wb_lsu_prf_i  && src_prf != 7'd0) ready = 1'b1;
       check_ready = ready;
     end
   endfunction
