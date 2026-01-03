@@ -287,14 +287,25 @@ module top #(
   logic [31:0] br_src0_data, br_src1_data;
   logic [31:0] lsu_src0_data, lsu_src1_data;
 
+  // Second ALU issue signals (ALU1)
+  logic        alu1_issue_valid;
+  rs_pkt_t     alu1_issue_pkt;
+  logic [31:0] alu1_src0_data, alu1_src1_data;
+
   // Writeback signals from execution units
   logic        wb_alu_valid, wb_br_valid, wb_lsu_valid;
   logic [6:0]  wb_alu_prf, wb_br_prf, wb_lsu_prf;
   logic [31:0] wb_alu_data, wb_br_data, wb_lsu_data;
   logic [ROB_BITS-1:0] wb_alu_rob_tag, wb_br_rob_tag, wb_lsu_rob_tag;
 
+  // Second ALU writeback signals (ALU1)
+  logic        wb_alu1_valid;
+  logic [6:0]  wb_alu1_prf;
+  logic [31:0] wb_alu1_data;
+  logic [ROB_BITS-1:0] wb_alu1_rob_tag;
+
   // EXU ready signals - forward declarations (assigned after execution units)
-  logic alu_ready, br_ready, lsu_ready;
+  logic alu_ready, br_ready, lsu_ready, alu1_ready;
 
   // Branch completion signals (separate from writeback - BNE completes but doesn't write)
   logic        complete_br_valid;
@@ -383,8 +394,8 @@ module top #(
   // EXECUTION UNITS
   // ============================================================
   
-  // ----- ALU Unit -----
-  ALU_unit u_alu (
+  // ----- ALU Unit 0 -----
+  ALU_unit u_alu0 (
     .clk          (clk),
     .reset        (reset),
     .flush_i      (branch_mispredict),
@@ -397,6 +408,22 @@ module top #(
     .wb_data_o    (wb_alu_data),
     .wb_dst_prf_o (wb_alu_prf),
     .wb_rob_tag_o (wb_alu_rob_tag)
+  );
+
+  // ----- ALU Unit 1 (Second ALU for dual-issue) -----
+  ALU_unit u_alu1 (
+    .clk          (clk),
+    .reset        (reset),
+    .flush_i      (branch_mispredict),
+    .valid_i      (alu1_issue_valid),
+    .pkt_i        (alu1_issue_pkt),
+    .src0_data_i  (alu1_src0_data),
+    .src1_data_i  (alu1_src1_data),
+    .ready_o      (alu1_ready),
+    .wb_valid_o   (wb_alu1_valid),
+    .wb_data_o    (wb_alu1_data),
+    .wb_dst_prf_o (wb_alu1_prf),
+    .wb_rob_tag_o (wb_alu1_rob_tag)
   );
 
   // ----- Branch Unit -----
