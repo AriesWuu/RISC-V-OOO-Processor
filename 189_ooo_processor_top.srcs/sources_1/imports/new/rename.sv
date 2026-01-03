@@ -1,96 +1,128 @@
+import cpu_pkg::*;
+
 module rename_module #(
   parameter int ARCH_REGS   = 32,
   parameter int PHYS_REGS   = 96,
   parameter int ROB_ENTRIES = 16
 )(
-  input  logic         clk,
-  input  logic         reset,
-  // input from top
-  input  logic         ready_from_dispatch,
-  input  logic         valid_from_decode,
-  input  logic [4:0]   srcReg1_arch,
-  input  logic [4:0]   srcReg2_arch,
-  input  logic [4:0]   destReg_arch,
-  input  logic         regWrite_rename,
-  input  logic         branch_rename,
+  input  logic              clk,
+  input  logic              reset,
 
-  // Control signals from decode for op packing
-  input  logic [1:0]   fu_i,           // 00:ALU, 01:Branch, 10:LSU
-  input  logic [3:0]   alu_ctrl_i,     // ALU operation encoding
-  input  logic         aluSrc_i,       // 1: use immediate as ALU src B
-  input  logic         isJump_i,       // JALR
-  input  logic         memRead_i,      // load operation
-  input  logic         memWrite_i,     // store operation
-  input  logic         loadByte_i,     // 1: LBU, 0: LW
-  input  logic         storeHalf_i,    // 1: SH, 0: SW
-  input  logic [31:0]  imm_i,          // immediate value
-  input  logic [31:0]  pc_i,           // PC for branch target calculation
-  input  logic         pred_hit_i,
-  input  logic         pred_taken_i,
-  input  logic [31:0]  pred_target_i,
+  // Dual-issue input from decode stage
+  input  logic              ready_from_dispatch,
+  input  decode_dual_pkt_t  decode_pkt_i,
+  input  logic              valid_from_decode,
 
-  // branch mispredict signal and recovery tag
-  input  logic         branch_miss_rename,
-  input  logic [$clog2(ROB_ENTRIES)-1:0] recover_tag_i,  // ROB tag of mispredicting branch
-  // retire signal
-  input  logic         retire_enable, 
-  input  logic [6:0]   retired_destReg_phys,
-  // output to next stage
-  output logic         valid_to_dispatch,
-  output logic         ready_to_decode,
-  output logic [6:0]   srcReg1_phys,
-  output logic [6:0]   srcReg2_phys,
-  output logic [6:0]   destReg_phys,
-  output logic [6:0]   oldDest_phys,
-  output logic [$clog2(ROB_ENTRIES)-1:0] rob_tag,
+  // Branch mispredict signal and recovery tag
+  input  logic              branch_miss_rename,
+  input  logic [$clog2(ROB_ENTRIES)-1:0] recover_tag_i,
 
-  // Packed micro_op and control signals to dispatch
-  output logic [6:0]   micro_op_o,     // Packed micro-operation code (not RISC-V opcode)
-  output logic [1:0]   fu_o,           // Function unit (pass-through)
-  output logic         is_branch_o,    // Is branch instruction
-  output logic         writes_rd_o,    // Writes to register file
-  output logic [31:0]  imm_o,          // Immediate value (pass-through)
-  output logic [31:0]  pc_o,           // PC (pass-through)
-  output logic         pred_hit_o,
-  output logic         pred_taken_o,
-  output logic [31:0]  pred_target_o
+  // Retire signals (dual retire support)
+  input  logic              retire_enable_0,
+  input  logic [6:0]        retired_destReg_phys_0,
+  input  logic              retire_enable_1,
+  input  logic [6:0]        retired_destReg_phys_1,
+
+  // Dual-issue output to dispatch stage
+  output logic              valid_to_dispatch,
+  output logic              ready_to_decode,
+  output rename_dual_pkt_t  rename_pkt_o
 );
-  // Internal signals
-  logic take_branch;
-  logic write_enable;
-  logic update_rob_tag;
-  
-  assign take_branch      = valid_from_decode && (branch_rename || isJump_i);
-  assign write_enable     = valid_from_decode && regWrite_rename && (destReg_arch != 5'd0);
-  assign update_rob_tag   = valid_from_decode && ready_from_dispatch;
-  
-  // Recovery uses the next tag after the mispredicting branch
-  // This is the checkpoint that was saved when that branch was allocated
-  logic [$clog2(ROB_ENTRIES)-1:0] recovery_checkpoint_tag;
-  assign recovery_checkpoint_tag = recover_tag_i;  // The branch's own tag points to its checkpoint
-  
-  // Instantiate Map Table
+  // ============================================================
+  // Dual-issue control signals
+  // ============================================================
+  localparam int PRF_BITS = $clog2(PHYS_REGS);
+  localparam int ROB_BITS = $clog2(ROB_ENTRIES);
+
+  // Instruction 0 signals
+  logic        take_branch_0, write_enable_0;
+  logic [6:0]  srcReg1_phys_0, srcReg2_phys_0;
+  logic [6:0]  destReg_phys_0, oldDest_phys_0;
+  logic [ROB_BITS-1:0] rob_tag_0;
+  logic [6:0]  micro_op_0;
+
+  // Instruction 1 signals
+  logic        take_branch_1, write_enable_1;
+  logic [6:0]  srcReg1_phys_1, srcReg2_phys_1;
+  logic [6:0]  destReg_phys_1, oldDest_phys_1;
+  logic [ROB_BITS-1:0] rob_tag_1;
+  logic [6:0]  micro_op_1;
+
+  // Dual-issue enables
+  logic        update_rob_tag_0, update_rob_tag_1;
+  logic        alloc_rdy_0, alloc_rdy_1;
+
+  // Branch/write enables for each instruction
+  assign take_branch_0  = valid_from_decode && decode_pkt_i.valid0 && (decode_pkt_i.pkt0.branch || decode_pkt_i.pkt0.isJump);
+  assign write_enable_0 = valid_from_decode && decode_pkt_i.valid0 && decode_pkt_i.pkt0.regWrite && (decode_pkt_i.pkt0.destReg != 5'd0);
+
+  assign take_branch_1  = valid_from_decode && decode_pkt_i.valid1 && (decode_pkt_i.pkt1.branch || decode_pkt_i.pkt1.isJump);
+  assign write_enable_1 = valid_from_decode && decode_pkt_i.valid1 && decode_pkt_i.pkt1.regWrite && (decode_pkt_i.pkt1.destReg != 5'd0);
+
+  // ROB tag increment enables (when instruction enters rename and dispatch is ready)
+  assign update_rob_tag_0 = valid_from_decode && decode_pkt_i.valid0 && ready_from_dispatch;
+  assign update_rob_tag_1 = valid_from_decode && decode_pkt_i.valid1 && ready_from_dispatch;
+
+  // Recovery checkpoint tag
+  logic [ROB_BITS-1:0] recovery_checkpoint_tag;
+  assign recovery_checkpoint_tag = recover_tag_i;
+
+  // Branch checkpoint logic: save checkpoint on FIRST branch encountered
+  logic        branch_checkpoint;
+  logic [ROB_BITS-1:0] checkpoint_tag;
+  always_comb begin
+    if (take_branch_0) begin
+      // First instruction is branch - use its tag
+      branch_checkpoint = 1'b1;
+      checkpoint_tag    = rob_tag_0;
+    end else if (take_branch_1) begin
+      // Second instruction is branch - use its tag
+      branch_checkpoint = 1'b1;
+      checkpoint_tag    = rob_tag_1;
+    end else begin
+      branch_checkpoint = 1'b0;
+      checkpoint_tag    = rob_tag_0;  // Don't care
+    end
+  end
+
+  // ============================================================
+  // Instantiate Map Table (4-read, 2-write)
+  // ============================================================
   map_table #(
     .ARCH_REGS   (ARCH_REGS),
     .ROB_ENTRIES (ROB_ENTRIES)
   ) u_map_table (
     .clk              (clk),
     .reset            (reset),
-    .rs1_arch         (srcReg1_arch),
-    .rs2_arch         (srcReg2_arch),
-    .rd_arch          (destReg_arch),
-    .wr_en_dst        (write_enable),
-    .branch_checkpoint(take_branch),
-    .checkpoint_tag   (rob_tag),              // Save checkpoint at current ROB tag
+    // Dual-issue read ports
+    .rs1_arch_0       (decode_pkt_i.pkt0.srcReg1),
+    .rs2_arch_0       (decode_pkt_i.pkt0.srcReg2),
+    .rd_arch_0        (decode_pkt_i.pkt0.destReg),
+    .rs1_arch_1       (decode_pkt_i.pkt1.srcReg1),
+    .rs2_arch_1       (decode_pkt_i.pkt1.srcReg2),
+    .rd_arch_1        (decode_pkt_i.pkt1.destReg),
+    // Dual-issue write ports
+    .wr_en_0          (write_enable_0),
+    .wr_en_1          (write_enable_1),
+    .rd_prf_0         (destReg_phys_0),
+    .rd_prf_1         (destReg_phys_1),
+    // Outputs with RAW/WAW detection
+    .rs1_prf_0        (srcReg1_phys_0),
+    .rs2_prf_0        (srcReg2_phys_0),
+    .rd_old_prf_0     (oldDest_phys_0),
+    .rs1_prf_1        (srcReg1_phys_1),
+    .rs2_prf_1        (srcReg2_phys_1),
+    .rd_old_prf_1     (oldDest_phys_1),
+    // Branch checkpoint/recovery
+    .branch_checkpoint(branch_checkpoint),
+    .checkpoint_tag   (checkpoint_tag),
     .branch_recover   (branch_miss_rename),
-    .recover_tag      (recovery_checkpoint_tag),  // Restore from mispredicting branch's tag
-    .rd_prf           (destReg_phys),
-    .rs1_prf          (srcReg1_phys),
-    .rs2_prf          (srcReg2_phys),
-    .rd_old_prf       (oldDest_phys)
+    .recover_tag      (recovery_checkpoint_tag)
   );
 
-  // ---- Free List 实例 ----
+  // ============================================================
+  // Instantiate Free List (dual allocation/retire)
+  // ============================================================
   free_list #(
     .ARCH_REGS   (ARCH_REGS),
     .PHYS_REGS   (PHYS_REGS),
@@ -98,58 +130,131 @@ module rename_module #(
   ) u_free_list (
     .clk               (clk),
     .reset             (reset),
-    .retire_en         (retire_enable),
-    .allocate_en       (write_enable),
-    .retired_preg      (retired_destReg_phys),
-    .branch_checkpoint (take_branch),
-    .checkpoint_tag    (rob_tag),             // Save checkpoint at current ROB tag
+    // Dual retire
+    .retire_en_0       (retire_enable_0),
+    .retired_preg_0    (retired_destReg_phys_0),
+    .retire_en_1       (retire_enable_1),
+    .retired_preg_1    (retired_destReg_phys_1),
+    // Dual allocate
+    .allocate_en_0     (write_enable_0),
+    .allocate_en_1     (write_enable_1),
+    .alloc_rdy_0       (alloc_rdy_0),
+    .alloc_rdy_1       (alloc_rdy_1),
+    .new_preg_0        (destReg_phys_0),
+    .new_preg_1        (destReg_phys_1),
+    // Branch checkpoint/recovery
+    .branch_checkpoint (branch_checkpoint),
+    .checkpoint_tag    (checkpoint_tag),
     .branch_recover    (branch_miss_rename),
-    .recover_tag       (recovery_checkpoint_tag),  // Restore from mispredicting branch's tag
-    .alloc_rdy         (ready_to_decode),
-    .new_preg          (destReg_phys)
+    .recover_tag       (recovery_checkpoint_tag)
   );
 
-  // Instantiate ROB Tag
+  // ============================================================
+  // Instantiate ROB Tag (dual tag allocation)
+  // ============================================================
   rob_tag #(
     .ROB_ENTRIES (ROB_ENTRIES)
   ) u_rob_tag (
     .clk               (clk),
     .reset             (reset),
-    .inc_en            (update_rob_tag),
-    .rob_tag           (rob_tag),
-    .branch_checkpoint (take_branch),
-    .checkpoint_tag    (rob_tag),             // Save checkpoint at current ROB tag
+    // Dual increment
+    .inc_en_0          (update_rob_tag_0),
+    .inc_en_1          (update_rob_tag_1),
+    .rob_tag_0         (rob_tag_0),
+    .rob_tag_1         (rob_tag_1),
+    // Branch checkpoint/recovery
+    .branch_checkpoint (branch_checkpoint),
+    .checkpoint_tag    (checkpoint_tag),
     .branch_recover    (branch_miss_rename),
-    .recover_tag       (recovery_checkpoint_tag)   // Restore from mispredicting branch's tag
+    .recover_tag       (recovery_checkpoint_tag)
   );
-  
-  // Handshake signals
+
+  // ============================================================
+  // Ready/Valid handshake logic
+  // ============================================================
+  // Ready to decode if:
+  // - We can allocate at least 1 physical register (for instr0)
+  // - If instr1 is also valid, we need 2 physical registers
+  always_comb begin
+    if (decode_pkt_i.valid1 && write_enable_1) begin
+      // Dual-issue with dual-write: need 2 free registers
+      ready_to_decode = alloc_rdy_1;
+    end else begin
+      // Single-issue OR dual-issue with only first writing: need 1 free register
+      ready_to_decode = alloc_rdy_0;
+    end
+  end
+
+  // Valid to dispatch if decode is valid and we're ready
   assign valid_to_dispatch = valid_from_decode && ready_to_decode;
 
-  // =====================
-  // Pack micro_op field based on function unit (fu)
-  // =====================
+  // ============================================================
+  // Pack micro_op field for each instruction
+  // ============================================================
   // micro_op[6:0] encoding by fu:
   //   fu=00 (ALU):    {2'b00, aluSrc, alu_ctrl[3:0]}
   //   fu=01 (Branch): {5'b00000, isJump, branch}
   //   fu=10 (LSU):    {3'b000, storeHalf, loadByte, memWrite, memRead}
+
+  // Instruction 0
   always_comb begin
-    case (fu_i)
-      2'b00: micro_op_o = {2'b00, aluSrc_i, alu_ctrl_i};              // ALU
-      2'b01: micro_op_o = {5'b00000, isJump_i, branch_rename};        // Branch
-      2'b10: micro_op_o = {3'b000, storeHalf_i, loadByte_i, memWrite_i, memRead_i}; // LSU
-      default: micro_op_o = 7'b0;
+    case (decode_pkt_i.pkt0.fu)
+      2'b00: micro_op_0 = {2'b00, decode_pkt_i.pkt0.aluSrc, decode_pkt_i.pkt0.alu_ctrl};
+      2'b01: micro_op_0 = {5'b00000, decode_pkt_i.pkt0.isJump, decode_pkt_i.pkt0.branch};
+      2'b10: micro_op_0 = {3'b000, decode_pkt_i.pkt0.storeHalf, decode_pkt_i.pkt0.loadByte,
+                           decode_pkt_i.pkt0.memWrite, decode_pkt_i.pkt0.memRead};
+      default: micro_op_0 = 7'b0;
     endcase
   end
 
-  // Pass-through signals
-  assign fu_o        = fu_i;
-  assign is_branch_o = branch_rename || isJump_i;
-  assign writes_rd_o = regWrite_rename;
-  assign imm_o       = imm_i;
-  assign pc_o        = pc_i;
-  assign pred_hit_o    = pred_hit_i;
-  assign pred_taken_o  = pred_taken_i;
-  assign pred_target_o = pred_target_i;
+  // Instruction 1
+  always_comb begin
+    case (decode_pkt_i.pkt1.fu)
+      2'b00: micro_op_1 = {2'b00, decode_pkt_i.pkt1.aluSrc, decode_pkt_i.pkt1.alu_ctrl};
+      2'b01: micro_op_1 = {5'b00000, decode_pkt_i.pkt1.isJump, decode_pkt_i.pkt1.branch};
+      2'b10: micro_op_1 = {3'b000, decode_pkt_i.pkt1.storeHalf, decode_pkt_i.pkt1.loadByte,
+                           decode_pkt_i.pkt1.memWrite, decode_pkt_i.pkt1.memRead};
+      default: micro_op_1 = 7'b0;
+    endcase
+  end
+
+  // ============================================================
+  // Build rename_dual_pkt_t output
+  // ============================================================
+  always_comb begin
+    // Packet 0: First instruction
+    rename_pkt_o.pkt0.micro_op    = micro_op_0;
+    rename_pkt_o.pkt0.dst_prf_new = destReg_phys_0;
+    rename_pkt_o.pkt0.dst_prf_old = oldDest_phys_0;
+    rename_pkt_o.pkt0.src0_prf    = srcReg1_phys_0;
+    rename_pkt_o.pkt0.src1_prf    = srcReg2_phys_0;
+    rename_pkt_o.pkt0.imm         = decode_pkt_i.pkt0.imm;
+    rename_pkt_o.pkt0.fu          = decode_pkt_i.pkt0.fu;
+    rename_pkt_o.pkt0.is_branch   = decode_pkt_i.pkt0.branch || decode_pkt_i.pkt0.isJump;
+    rename_pkt_o.pkt0.writes_rd   = decode_pkt_i.pkt0.regWrite;
+    rename_pkt_o.pkt0.rob_tag     = rob_tag_0;
+    rename_pkt_o.pkt0.pc          = decode_pkt_i.pkt0.pc;
+    rename_pkt_o.pkt0.pred_hit    = decode_pkt_i.pkt0.pred_hit;
+    rename_pkt_o.pkt0.pred_taken  = decode_pkt_i.pkt0.pred_taken;
+    rename_pkt_o.pkt0.pred_target = decode_pkt_i.pkt0.pred_target;
+    rename_pkt_o.valid0           = decode_pkt_i.valid0;
+
+    // Packet 1: Second instruction
+    rename_pkt_o.pkt1.micro_op    = micro_op_1;
+    rename_pkt_o.pkt1.dst_prf_new = destReg_phys_1;
+    rename_pkt_o.pkt1.dst_prf_old = oldDest_phys_1;
+    rename_pkt_o.pkt1.src0_prf    = srcReg1_phys_1;
+    rename_pkt_o.pkt1.src1_prf    = srcReg2_phys_1;
+    rename_pkt_o.pkt1.imm         = decode_pkt_i.pkt1.imm;
+    rename_pkt_o.pkt1.fu          = decode_pkt_i.pkt1.fu;
+    rename_pkt_o.pkt1.is_branch   = decode_pkt_i.pkt1.branch || decode_pkt_i.pkt1.isJump;
+    rename_pkt_o.pkt1.writes_rd   = decode_pkt_i.pkt1.regWrite;
+    rename_pkt_o.pkt1.rob_tag     = rob_tag_1;
+    rename_pkt_o.pkt1.pc          = decode_pkt_i.pkt1.pc;
+    rename_pkt_o.pkt1.pred_hit    = decode_pkt_i.pkt1.pred_hit;
+    rename_pkt_o.pkt1.pred_taken  = decode_pkt_i.pkt1.pred_taken;
+    rename_pkt_o.pkt1.pred_target = decode_pkt_i.pkt1.pred_target;
+    rename_pkt_o.valid1           = decode_pkt_i.valid1;
+  end
 
 endmodule
