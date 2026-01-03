@@ -35,6 +35,7 @@ module dispatch_module #(
 
     // Ready signals from the downstream execution units (each RS issues at most one instruction when the EXU is ready)
     input  logic alu_exu_ready_i,
+    input  logic alu1_exu_ready_i,      // Second ALU ready signal
     input  logic br_exu_ready_i,
     input  logic lsu_exu_ready_i,
 
@@ -43,6 +44,12 @@ module dispatch_module #(
     output rs_pkt_t alu_issue_pkt_o,
     output logic [31:0] alu_src0_data_o,
     output logic [31:0] alu_src1_data_o,
+
+    // Second ALU outputs
+    output logic   alu1_issue_valid_o,
+    output rs_pkt_t alu1_issue_pkt_o,
+    output logic [31:0] alu1_src0_data_o,
+    output logic [31:0] alu1_src1_data_o,
 
     output logic   br_issue_valid_o,
     output rs_pkt_t br_issue_pkt_o,
@@ -59,6 +66,11 @@ module dispatch_module #(
     input  logic [6:0]  wb_alu_prf_i,
     input  logic [31:0] wb_alu_data_i,
 
+    // Second ALU writeback inputs
+    input  logic        wb_alu1_valid_i,
+    input  logic [6:0]  wb_alu1_prf_i,
+    input  logic [31:0] wb_alu1_data_i,
+
     input  logic        wb_br_valid_i,
     input  logic [6:0]  wb_br_prf_i,
     input  logic [31:0] wb_br_data_i,
@@ -69,6 +81,7 @@ module dispatch_module #(
 
     // ROB tag from writeback (for marking complete)
     input  logic [$clog2(ROB_DEPTH)-1:0] wb_alu_rob_tag_i,
+    input  logic [$clog2(ROB_DEPTH)-1:0] wb_alu1_rob_tag_i,    // Second ALU ROB tag
     input  logic [$clog2(ROB_DEPTH)-1:0] wb_br_rob_tag_i,
     input  logic [$clog2(ROB_DEPTH)-1:0] wb_lsu_rob_tag_i,
     
@@ -95,30 +108,33 @@ module dispatch_module #(
 );
     // Same-cycle forwarding for issued operands.
     // Priority (to preserve old PRF behavior if multiple WB hit same preg):
-    //   ALU > BR > LSU > PRF
+    //   ALU0 > ALU1 > BR > LSU > PRF
     function automatic logic [31:0] op_with_bypass(
         input logic [PRF_BITS-1:0] addr,
         input logic [31:0]          prf_data
     );
         logic addr_nz;
-        logic hit_alu, hit_br, hit_lsu;
-        logic oh_alu, oh_br, oh_lsu, oh_prf;
+        logic hit_alu, hit_alu1, hit_br, hit_lsu;
+        logic oh_alu, oh_alu1, oh_br, oh_lsu, oh_prf;
         logic [31:0] data;
         begin
             addr_nz = (addr != '0);
 
-            hit_alu = wb_alu_valid_i && addr_nz && (wb_alu_prf_i == addr);
-            hit_br  = wb_br_valid_i  && addr_nz && (wb_br_prf_i  == addr);
-            hit_lsu = wb_lsu_valid_i && addr_nz && (wb_lsu_prf_i == addr);
+            hit_alu  = wb_alu_valid_i  && addr_nz && (wb_alu_prf_i  == addr);
+            hit_alu1 = wb_alu1_valid_i && addr_nz && (wb_alu1_prf_i == addr);
+            hit_br   = wb_br_valid_i   && addr_nz && (wb_br_prf_i   == addr);
+            hit_lsu  = wb_lsu_valid_i  && addr_nz && (wb_lsu_prf_i  == addr);
 
-            oh_alu = hit_alu;
-            oh_br  = hit_br  && !hit_alu;
-            oh_lsu = hit_lsu && !hit_alu && !hit_br;
-            oh_prf = !(oh_alu || oh_br || oh_lsu);
+            oh_alu  = hit_alu;
+            oh_alu1 = hit_alu1 && !hit_alu;
+            oh_br   = hit_br   && !hit_alu && !hit_alu1;
+            oh_lsu  = hit_lsu  && !hit_alu && !hit_alu1 && !hit_br;
+            oh_prf  = !(oh_alu || oh_alu1 || oh_br || oh_lsu);
 
-            data = ({32{oh_alu}} & wb_alu_data_i)
-                 | ({32{oh_br}}  & wb_br_data_i)
-                 | ({32{oh_lsu}} & wb_lsu_data_i)
+            data = ({32{oh_alu}}  & wb_alu_data_i)
+                 | ({32{oh_alu1}} & wb_alu1_data_i)
+                 | ({32{oh_br}}   & wb_br_data_i)
+                 | ({32{oh_lsu}}  & wb_lsu_data_i)
                  | ({32{oh_prf}} & prf_data);
 
             op_with_bypass = data;
@@ -226,12 +242,14 @@ module dispatch_module #(
     );
 
     // Apply same-cycle operand bypass here (moved out of PRF)
-    assign alu_src0_data_o = op_with_bypass(alu_issue_pkt_o.src0_prf, alu_src0_data_raw);
-    assign alu_src1_data_o = op_with_bypass(alu_issue_pkt_o.src1_prf, alu_src1_data_raw);
-    assign br_src0_data_o  = op_with_bypass(br_issue_pkt_o.src0_prf,  br_src0_data_raw);
-    assign br_src1_data_o  = op_with_bypass(br_issue_pkt_o.src1_prf,  br_src1_data_raw);
-    assign lsu_src0_data_o = op_with_bypass(lsu_issue_pkt_o.src0_prf, lsu_src0_data_raw);
-    assign lsu_src1_data_o = op_with_bypass(lsu_issue_pkt_o.src1_prf, lsu_src1_data_raw);
+    assign alu_src0_data_o  = op_with_bypass(alu_issue_pkt_o.src0_prf,  alu_src0_data_raw);
+    assign alu_src1_data_o  = op_with_bypass(alu_issue_pkt_o.src1_prf,  alu_src1_data_raw);
+    assign alu1_src0_data_o = op_with_bypass(alu1_issue_pkt_o.src0_prf, alu1_src0_data_raw);
+    assign alu1_src1_data_o = op_with_bypass(alu1_issue_pkt_o.src1_prf, alu1_src1_data_raw);
+    assign br_src0_data_o   = op_with_bypass(br_issue_pkt_o.src0_prf,   br_src0_data_raw);
+    assign br_src1_data_o   = op_with_bypass(br_issue_pkt_o.src1_prf,   br_src1_data_raw);
+    assign lsu_src0_data_o  = op_with_bypass(lsu_issue_pkt_o.src0_prf,  lsu_src0_data_raw);
+    assign lsu_src1_data_o  = op_with_bypass(lsu_issue_pkt_o.src1_prf,  lsu_src1_data_raw);
 
     // =====================
     // 3. Three reservation stations (each with 8 entries)
@@ -240,14 +258,14 @@ module dispatch_module #(
     logic [$clog2(ROB_DEPTH)-1:0] rob_head_out;
     logic [$clog2(ROB_DEPTH)-1:0] rob_tail_cp_out;
     
-    // ALU RS - Uses "oldest among ready" policy with pipelined issue
+    // ALU RS 0 - Uses "oldest among ready" policy with pipelined issue
     logic        alu_alloc_ready;
     logic        alu_alloc_valid;
     rs_pkt_t     alu_alloc_pkt;
     RS #(
         .PHYS_REGS  (PHYS_REGS),
         .ROB_ENTRIES(ROB_DEPTH)
-    ) u_rs_alu (
+    ) u_rs_alu0 (
         .clk                  (clk),
         .reset                (reset),
         .recover_i            (recover_i),
@@ -266,6 +284,34 @@ module dispatch_module #(
         .exu_ready_i          (alu_exu_ready_i),
         .issue_valid_o        (alu_issue_valid_o),
         .issue_pkt_o          (alu_issue_pkt_o)
+    );
+
+    // ALU RS 1 (Second ALU) - Uses "oldest among ready" policy with pipelined issue
+    logic        alu1_alloc_ready;
+    logic        alu1_alloc_valid;
+    rs_pkt_t     alu1_alloc_pkt;
+    RS #(
+        .PHYS_REGS  (PHYS_REGS),
+        .ROB_ENTRIES(ROB_DEPTH)
+    ) u_rs_alu1 (
+        .clk                  (clk),
+        .reset                (reset),
+        .recover_i            (recover_i),
+        .rob_head_i           (rob_head_out),
+        .rob_tail_cp_i        (rob_tail_cp_out),
+        .prf_busy_i           (prf_busy_alu),  // Share busy copy with ALU0
+        .wb_alu_valid_i       (wb_alu_valid_i),
+        .wb_alu_prf_i         (wb_alu_prf_i),
+        .wb_br_valid_i        (wb_br_valid_i),
+        .wb_br_prf_i          (wb_br_prf_i),
+        .wb_lsu_valid_i       (wb_lsu_valid_i),
+        .wb_lsu_prf_i         (wb_lsu_prf_i),
+        .alloc_valid_i        (alu1_alloc_valid),
+        .alloc_ready_o        (alu1_alloc_ready),
+        .alloc_pkt_i          (alu1_alloc_pkt),
+        .exu_ready_i          (alu1_exu_ready_i),
+        .issue_valid_o        (alu1_issue_valid_o),
+        .issue_pkt_o          (alu1_issue_pkt_o)
     );
 
     // BR RS - Uses "oldest among ready" policy with pipelined issue
