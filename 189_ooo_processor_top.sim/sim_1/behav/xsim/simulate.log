@@ -170,4 +170,4 @@ Register Values:
   a0 (x10) = 3
   a1 (x11) = 1
 ========================================
-$finish called at time : 2145 ns : File "D:/Vivado_Project/116C_Honor/189_ooo_processor_top/189_ooo_processor_top.srcs/sim_1/new/top_tb.sv" Line 160
+$finish called at time : 2145 ns : File "D:/Vivado_Project/116C_Honor/189_ooo_processor_top/189_ooo_processor_top.srcs/sim_1/new/top_tb.sv" Line 162

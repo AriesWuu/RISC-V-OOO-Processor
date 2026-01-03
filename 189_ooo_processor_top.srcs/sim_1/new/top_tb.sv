@@ -6,7 +6,7 @@ module top_tb;
   // Parameters
   // ============================================================
   parameter CLK_PERIOD = 10;  // 100MHz
-  parameter SIM_CYCLES = 1000;
+  parameter SIM_CYCLES = 3000;  // 增大以适应 complex_test
 
   // ============================================================
   // Signals
@@ -22,8 +22,10 @@ module top_tb;
   top #(
     .PHYS_REGS   (128),
     .ROB_ENTRIES (16),
-    .WORDS       (128),
+    .WORDS       (256),  // 增大以容纳 complex_test (148条 = 592字节)
     .MEMFILE     ("25instMem-test.mem")
+//    .MEMFILE     ("simple_loop_test.mem")
+//    .MEMFILE     ("complex_test.mem")
   ) u_dut (
     .clk            (clk),
     .reset          (reset),
