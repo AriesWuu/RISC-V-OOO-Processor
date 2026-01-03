@@ -4,6 +4,8 @@ package cpu_pkg;
   parameter integer PHYS_REGS    = 128;
   parameter integer ROB_ENTRIES  = 16;
   parameter integer IMM_BITS     = 32;  // RV32I
+  parameter integer ISSUE_WIDTH  = 2;   // Dual-issue superscalar
+  parameter integer NUM_ALUS     = 2;   // Number of ALU execution units
 
   localparam int PRF_BITS = $clog2(PHYS_REGS);
   localparam int ROB_BITS = $clog2(ROB_ENTRIES);
@@ -81,5 +83,40 @@ package cpu_pkg;
     logic                pred_taken;
     logic [31:0]         pred_target;
   } rs_pkt_t;
+
+
+  // Dual-issue packet structures (for frontend dual-issue support)
+  // =====================================================
+  // Used between fetch and decode for dual-fetch
+  typedef struct packed {
+    logic [31:0] pc0;         // First instruction PC
+    logic [31:0] instr0;      // First instruction
+    logic        valid0;      // First instruction valid
+    logic [31:0] pc1;         // Second instruction PC (PC+4)
+    logic [31:0] instr1;      // Second instruction
+    logic        valid1;      // Second instruction valid (0 if only 1 fetched)
+    logic        pred_hit0;   // BTB hit for first instruction
+    logic        pred_taken0; // Predicted taken for first instruction
+    logic [31:0] pred_target0;
+    logic        pred_hit1;   // BTB hit for second instruction
+    logic        pred_taken1; // Predicted taken for second instruction
+    logic [31:0] pred_target1;
+  } fetch_dual_pkt_t;
+
+  // Used between decode and rename for dual-decode
+  typedef struct packed {
+    decode_pkt_t pkt0;        // First decoded instruction
+    logic        valid0;      // First instruction valid
+    decode_pkt_t pkt1;        // Second decoded instruction
+    logic        valid1;      // Second instruction valid (0 if only pkt0 valid)
+  } decode_dual_pkt_t;
+
+  // Used between rename and dispatch for dual-rename
+  typedef struct packed {
+    rename_pkt_t pkt0;        // First renamed instruction
+    logic        valid0;      // First instruction valid
+    rename_pkt_t pkt1;        // Second renamed instruction
+    logic        valid1;      // Second instruction valid (0 if only pkt0 valid)
+  } rename_dual_pkt_t;
 
 endpackage : cpu_pkg
