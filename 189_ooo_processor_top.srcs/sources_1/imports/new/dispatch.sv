@@ -434,16 +434,38 @@ module dispatch_module #(
     // =====================
     // 5. Allocation control and packet assembly （combinational）
     // =====================
+    // ALU round-robin allocation pointer (0 = prefer ALU0, 1 = prefer ALU1)
+    logic alu_rr_ptr;
+
+    always_ff @(posedge clk or posedge reset) begin
+        if (reset) begin
+            alu_rr_ptr <= 1'b0;
+        end else if (recover_i) begin
+            // Reset to 0 on branch misprediction recovery
+            alu_rr_ptr <= 1'b0;
+        end else if (accept && pb_pkt.fu == 2'd0) begin
+            // Toggle round-robin pointer when ALU instruction is allocated
+            alu_rr_ptr <= ~alu_rr_ptr;
+        end
+    end
+
     // Determine whether the target RS (based on FU type) has an available slot
     logic target_rs_ready;
     logic is_store_instr;
-    
+    logic prefer_alu0;  // Which ALU RS to try first based on round-robin
+
     // micro_op[1] = sw (store operation)
     assign is_store_instr = (pb_pkt.fu == 2'd2) && pb_pkt.micro_op[1];
-    
+
+    // For ALU instructions, implement round-robin with fallback:
+    // - Try preferred RS first (based on alu_rr_ptr)
+    // - If preferred RS is full, try the other ALU RS
+    // - Target is ready if EITHER ALU RS has space
     always_comb begin
+        prefer_alu0 = (alu_rr_ptr == 1'b0);
+
         unique case (pb_pkt.fu)
-            2'd0: target_rs_ready = alu_alloc_ready;
+            2'd0: target_rs_ready = alu_alloc_ready | alu1_alloc_ready;  // Either ALU RS
             2'd1: target_rs_ready = br_alloc_ready;
             2'd2: target_rs_ready = lsu_alloc_ready;
             default: target_rs_ready = 1'b0;
@@ -460,33 +482,57 @@ module dispatch_module #(
     // Also mark the destination PRF busy when the instruction writes back
     always_comb begin
         // Default assignments
-        alu_alloc_valid = 1'b0; br_alloc_valid = 1'b0; lsu_alloc_valid = 1'b0;
-        alu_alloc_pkt   = '0;   br_alloc_pkt   = '0;   lsu_alloc_pkt   = '0;
-        prf_set_busy_en    = 1'b0;
-        prf_set_busy_preg  = '0;
+        alu_alloc_valid  = 1'b0;
+        alu1_alloc_valid = 1'b0;
+        br_alloc_valid   = 1'b0;
+        lsu_alloc_valid  = 1'b0;
+        alu_alloc_pkt    = '0;
+        alu1_alloc_pkt   = '0;
+        br_alloc_pkt     = '0;
+        lsu_alloc_pkt    = '0;
+        prf_set_busy_en  = 1'b0;
+        prf_set_busy_preg = '0;
 
         if (accept) begin
             // Build a common rs_pkt_t structure
             rs_pkt_t pkt;
-            pkt.valid      = 1'b1;
-            pkt.micro_op   = pb_pkt.micro_op;
-            pkt.dst_prf    = pb_pkt.dst_prf_new;
-            pkt.src0_prf   = pb_pkt.src0_prf;
-            pkt.src0_ready = 1'b0; // RS recomputes readiness from the busy scoreboard
-            pkt.src1_prf   = pb_pkt.src1_prf;
-            pkt.src1_ready = 1'b0;
-            pkt.imm        = pb_pkt.imm;
-            pkt.fu         = pb_pkt.fu;
-            pkt.rob_tag    = rob_tail_idx;
-            pkt.pc         = pb_pkt.pc;
+            pkt.valid       = 1'b1;
+            pkt.micro_op    = pb_pkt.micro_op;
+            pkt.dst_prf     = pb_pkt.dst_prf_new;
+            pkt.src0_prf    = pb_pkt.src0_prf;
+            pkt.src0_ready  = 1'b0; // RS recomputes readiness from the busy scoreboard
+            pkt.src1_prf    = pb_pkt.src1_prf;
+            pkt.src1_ready  = 1'b0;
+            pkt.imm         = pb_pkt.imm;
+            pkt.fu          = pb_pkt.fu;
+            pkt.rob_tag     = rob_tail_idx;
+            pkt.pc          = pb_pkt.pc;
             pkt.pred_hit    = pb_pkt.pred_hit;
             pkt.pred_taken  = pb_pkt.pred_taken;
             pkt.pred_target = pb_pkt.pred_target;
 
             unique case (pb_pkt.fu)
                 2'd0: begin
-                    alu_alloc_valid = 1'b1;
-                    alu_alloc_pkt   = pkt;
+                    // ALU instruction - use round-robin with fallback
+                    if (prefer_alu0) begin
+                        // Prefer ALU0, fallback to ALU1 if ALU0 is full
+                        if (alu_alloc_ready) begin
+                            alu_alloc_valid = 1'b1;
+                            alu_alloc_pkt   = pkt;
+                        end else if (alu1_alloc_ready) begin
+                            alu1_alloc_valid = 1'b1;
+                            alu1_alloc_pkt   = pkt;
+                        end
+                    end else begin
+                        // Prefer ALU1, fallback to ALU0 if ALU1 is full
+                        if (alu1_alloc_ready) begin
+                            alu1_alloc_valid = 1'b1;
+                            alu1_alloc_pkt   = pkt;
+                        end else if (alu_alloc_ready) begin
+                            alu_alloc_valid = 1'b1;
+                            alu_alloc_pkt   = pkt;
+                        end
+                    end
                 end
                 2'd1: begin
                     br_alloc_valid  = 1'b1;
