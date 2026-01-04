@@ -134,43 +134,42 @@ module dispatch_module #(
     endfunction
 
     // ==================================
-    // 1. Single-entry pipeline buffer
+    // 1. Dual-entry pipeline buffer
     // ==================================
-    // NOTE: Currently dispatch is single-issue - only processes pkt0
-    // TODO: Implement full dual-issue dispatch logic to process both pkt0 and pkt1
-    rename_pkt_t rn_pkt_in;
-    assign rn_pkt_in.micro_op     = rn_pkt_i.pkt0.micro_op;
-    assign rn_pkt_in.dst_prf_new  = rn_pkt_i.pkt0.dst_prf_new;
-    assign rn_pkt_in.dst_prf_old  = rn_pkt_i.pkt0.dst_prf_old;
-    assign rn_pkt_in.src0_prf     = rn_pkt_i.pkt0.src0_prf;
-    assign rn_pkt_in.src1_prf     = rn_pkt_i.pkt0.src1_prf;
-    assign rn_pkt_in.imm          = rn_pkt_i.pkt0.imm;
-    assign rn_pkt_in.fu           = rn_pkt_i.pkt0.fu;
-    assign rn_pkt_in.is_branch    = rn_pkt_i.pkt0.is_branch;
-    assign rn_pkt_in.writes_rd    = rn_pkt_i.pkt0.writes_rd;
-    assign rn_pkt_in.rob_tag      = rn_pkt_i.pkt0.rob_tag;
-    assign rn_pkt_in.pc           = rn_pkt_i.pkt0.pc;
-    assign rn_pkt_in.pred_hit     = rn_pkt_i.pkt0.pred_hit;
-    assign rn_pkt_in.pred_taken   = rn_pkt_i.pkt0.pred_taken;
-    assign rn_pkt_in.pred_target  = rn_pkt_i.pkt0.pred_target;
+    // Stores up to 2 instructions (pkt0 and pkt1) from rename stage
+    rename_pkt_t pb_pkt_0, pb_pkt_1;
+    logic        pb_valid_0, pb_valid_1;
+    logic        pb_ready;
 
-    logic        pb_valid;
-    rename_pkt_t pb_pkt;
-    logic        pb_ready;  
+    // Dual skid buffer using rename_dual_pkt_t
+    logic        pb_dual_valid;
+    rename_dual_pkt_t pb_dual_pkt;
 
     pipeline_skid_buffer_struct #(
-        .T(rename_pkt_t)
+        .T(rename_dual_pkt_t)
     ) u_skid_rn_dispatch (
         .clk       (clk),
         .reset     (reset),
         .flush     (recover_i),
         .valid_in  (rn_valid_i),
         .ready_in  (rn_ready_o),
-        .data_in   (rn_pkt_in),
-        .valid_out (pb_valid),
+        .data_in   (rn_pkt_i),
+        .valid_out (pb_dual_valid),
         .ready_out (pb_ready),
-        .data_out  (pb_pkt)
+        .data_out  (pb_dual_pkt)
     );
+
+    // Unpack dual packet into two separate packets for dispatch logic
+    assign pb_pkt_0   = pb_dual_pkt.pkt0;
+    assign pb_pkt_1   = pb_dual_pkt.pkt1;
+    assign pb_valid_0 = pb_dual_valid && pb_dual_pkt.valid0;
+    assign pb_valid_1 = pb_dual_valid && pb_dual_pkt.valid1;
+
+    // Alias for backward compatibility - current dispatch logic uses pb_pkt to refer to first instruction
+    rename_pkt_t pb_pkt;
+    logic        pb_valid;
+    assign pb_pkt  = pb_pkt_0;
+    assign pb_valid = pb_valid_0;
 
     // =====================
     // 2. PRF with busy scoreboard (replicated for timing)
@@ -389,33 +388,43 @@ module dispatch_module #(
     logic                       rob_ready;
     logic [$clog2(ROB_DEPTH)-1:0] rob_tail_idx;
     
-    // Declare accept before use in ROB
-    logic accept;
-    assign accept = pb_valid & pb_ready;
+    // Dual dispatch accept signals
+    logic accept, accept_0, accept_1;
+    logic dispatch_dual;  // True when both instructions can dispatch
+
+    // Determine if we can dual-dispatch (both ALU instructions)
+    assign dispatch_dual = pb_valid_0 && pb_valid_1 &&
+                          (pb_pkt_0.fu == 2'd0) && (pb_pkt_1.fu == 2'd0) &&
+                          pb_ready;
+
+    // Accept logic for each instruction
+    assign accept   = pb_valid && pb_ready;    // Backward compatibility
+    assign accept_0 = pb_valid_0 && pb_ready;  // First instruction always accepted if valid
+    assign accept_1 = dispatch_dual;            // Second only if dual-dispatch conditions met
 
     ROB #(.ROB_ENTRIES(ROB_DEPTH)) u_rob (
         .clk                  (clk),
         .reset                (reset),
         .recover_i            (recover_i),
         .mispredict_rob_tag_i (wb_br_rob_tag_i),  // ROB tag of mispredicting branch
-        // Dual allocation (currently only using port 0)
-        .valid_0_i            (accept),
-        .is_branch_0_i        (pb_pkt.is_branch),
-        .writes_rd_0_i        (pb_pkt.writes_rd),
-        .dst_new_0_i          (pb_pkt.dst_prf_new),
-        .dst_old_0_i          (pb_pkt.dst_prf_old),
-        .rob_tag_0_i          (pb_pkt.rob_tag),
+        // Dual allocation
+        .valid_0_i            (accept_0),
+        .is_branch_0_i        (pb_pkt_0.is_branch),
+        .writes_rd_0_i        (pb_pkt_0.writes_rd),
+        .dst_new_0_i          (pb_pkt_0.dst_prf_new),
+        .dst_old_0_i          (pb_pkt_0.dst_prf_old),
+        .rob_tag_0_i          (pb_pkt_0.rob_tag),
         .tag_0_o              (rob_tail_idx),
         .ready_0_o            (rob_ready),
 
-        .valid_1_i            (1'b0),  // Not using dual allocation yet
-        .is_branch_1_i        (1'b0),
-        .writes_rd_1_i        (1'b0),
-        .dst_new_1_i          (7'd0),
-        .dst_old_1_i          (7'd0),
-        .rob_tag_1_i          ({$clog2(ROB_DEPTH){1'b0}}),
-        .tag_1_o              (),  // Unused
-        .ready_1_o            (),  // Unused
+        .valid_1_i            (accept_1),
+        .is_branch_1_i        (pb_pkt_1.is_branch),
+        .writes_rd_1_i        (pb_pkt_1.writes_rd),
+        .dst_new_1_i          (pb_pkt_1.dst_prf_new),
+        .dst_old_1_i          (pb_pkt_1.dst_prf_old),
+        .rob_tag_1_i          (pb_pkt_1.rob_tag),
+        .tag_1_o              (),  // Not used in current implementation
+        .ready_1_o            (),  // Not used in current implementation
 
         .full_o               (),
         .head_o               (rob_head_out),
