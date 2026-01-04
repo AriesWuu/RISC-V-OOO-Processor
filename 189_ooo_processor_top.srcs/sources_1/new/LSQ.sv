@@ -39,16 +39,25 @@ module LSQ #(
   output logic [31:0] ld_fwd_data_o,
   output logic [3:0]  ld_fwd_be_o,
   
-  // Store commit (from ROB)
-  input  logic        sq_commit_valid_i,
-  input  logic [$clog2(ROB_ENTRIES)-1:0] sq_commit_rob_tag_i,
-  output logic        sq_commit_ready_o,
-  
-  // Memory write interface (for committed stores)
-  output logic        mem_write_valid_o,
-  output logic [31:0] mem_write_addr_o,
-  output logic [31:0] mem_write_data_o,
-  output logic [3:0]  mem_write_be_o
+  // Dual store commit (from ROB)
+  input  logic        sq_commit_valid_0_i,
+  input  logic [$clog2(ROB_ENTRIES)-1:0] sq_commit_rob_tag_0_i,
+  output logic        sq_commit_ready_0_o,
+
+  input  logic        sq_commit_valid_1_i,
+  input  logic [$clog2(ROB_ENTRIES)-1:0] sq_commit_rob_tag_1_i,
+  output logic        sq_commit_ready_1_o,
+
+  // Dual memory write interface (for committed stores)
+  output logic        mem_write_valid_0_o,
+  output logic [31:0] mem_write_addr_0_o,
+  output logic [31:0] mem_write_data_0_o,
+  output logic [3:0]  mem_write_be_0_o,
+
+  output logic        mem_write_valid_1_o,
+  output logic [31:0] mem_write_addr_1_o,
+  output logic [31:0] mem_write_data_1_o,
+  output logic [3:0]  mem_write_be_1_o
 );
 
   localparam int ROB_BITS = $clog2(ROB_ENTRIES);
@@ -164,30 +173,51 @@ module LSQ #(
   assign ld_fwd_be_o    = fwd_be_merged;
   
   //===========================================================================
-  // Store Commit - Write to Memory
+  // Dual Store Commit - Write to Memory
   //===========================================================================
-  logic commit_match;
-  logic [SQ_BITS-1:0] commit_idx;
-  
+  logic commit_match_0, commit_match_1;
+  logic [SQ_BITS:0] sq_head_next;
+
+  assign sq_head_next = sq_head + 1'b1;
+
   always_comb begin
-    commit_match = 1'b0;
-    commit_idx   = sq_head[SQ_BITS-1:0];
-    
-    if (sq_commit_valid_i && !sq_empty) begin
-      if (sq[sq_head[SQ_BITS-1:0]].valid && 
-          sq[sq_head[SQ_BITS-1:0]].rob_tag == sq_commit_rob_tag_i &&
+    commit_match_0 = 1'b0;
+    commit_match_1 = 1'b0;
+
+    // Check head (first store)
+    if (sq_commit_valid_0_i && !sq_empty) begin
+      if (sq[sq_head[SQ_BITS-1:0]].valid &&
+          sq[sq_head[SQ_BITS-1:0]].rob_tag == sq_commit_rob_tag_0_i &&
           sq[sq_head[SQ_BITS-1:0]].addr_valid) begin
-        commit_match = 1'b1;
-        commit_idx   = sq_head[SQ_BITS-1:0];
+        commit_match_0 = 1'b1;
+      end
+    end
+
+    // Check head+1 (second store)
+    if (sq_commit_valid_1_i && (sq_count >= 2)) begin
+      if (sq[sq_head_next[SQ_BITS-1:0]].valid &&
+          sq[sq_head_next[SQ_BITS-1:0]].rob_tag == sq_commit_rob_tag_1_i &&
+          sq[sq_head_next[SQ_BITS-1:0]].addr_valid) begin
+        commit_match_1 = 1'b1;
       end
     end
   end
-  
-  assign sq_commit_ready_o = commit_match;
-  assign mem_write_valid_o = commit_match;
-  assign mem_write_addr_o  = {sq[commit_idx].word_addr, 2'b00};
-  assign mem_write_data_o  = sq[commit_idx].data;
-  assign mem_write_be_o    = sq[commit_idx].be;
+
+  // Commit outputs
+  assign sq_commit_ready_0_o = commit_match_0;
+  assign sq_commit_ready_1_o = commit_match_1;
+
+  // Memory write outputs for first store
+  assign mem_write_valid_0_o = commit_match_0;
+  assign mem_write_addr_0_o  = {sq[sq_head[SQ_BITS-1:0]].word_addr, 2'b00};
+  assign mem_write_data_0_o  = sq[sq_head[SQ_BITS-1:0]].data;
+  assign mem_write_be_0_o    = sq[sq_head[SQ_BITS-1:0]].be;
+
+  // Memory write outputs for second store
+  assign mem_write_valid_1_o = commit_match_1;
+  assign mem_write_addr_1_o  = {sq[sq_head_next[SQ_BITS-1:0]].word_addr, 2'b00};
+  assign mem_write_data_1_o  = sq[sq_head_next[SQ_BITS-1:0]].data;
+  assign mem_write_be_1_o    = sq[sq_head_next[SQ_BITS-1:0]].be;
 
   //===========================================================================
   // Flush: Count non-speculative entries to update tail
@@ -255,8 +285,23 @@ module LSQ #(
         end
       end
       
-      // Commit store (dequeue from head)
-      if (sq_commit_valid_i && sq_commit_ready_o) begin
+      // Dual commit store (dequeue from head)
+      logic commit_dual;
+      commit_dual = commit_match_0 && commit_match_1;
+
+      if (commit_dual) begin
+        // Commit both stores
+        if (sq[sq_head[SQ_BITS-1:0]].valid) begin
+          rob_to_sq_vld[sq[sq_head[SQ_BITS-1:0]].rob_tag] <= 1'b0;
+        end
+        if (sq[sq_head_next[SQ_BITS-1:0]].valid) begin
+          rob_to_sq_vld[sq[sq_head_next[SQ_BITS-1:0]].rob_tag] <= 1'b0;
+        end
+        sq[sq_head[SQ_BITS-1:0]] <= '0;
+        sq[sq_head_next[SQ_BITS-1:0]] <= '0;
+        sq_head <= sq_head + 2'b10;
+      end else if (commit_match_0) begin
+        // Commit only first store
         if (sq[sq_head[SQ_BITS-1:0]].valid) begin
           rob_to_sq_vld[sq[sq_head[SQ_BITS-1:0]].rob_tag] <= 1'b0;
         end

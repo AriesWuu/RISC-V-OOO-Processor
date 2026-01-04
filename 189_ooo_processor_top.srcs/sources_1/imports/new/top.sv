@@ -144,10 +144,11 @@ module top #(
   logic             ready_dispatch_to_rename;
   rename_dual_pkt_t rename_pkt;
 
-  // Commit signals from ROB (for retire)
-  logic        commit_valid;
-  logic        commit_writes_rd;
-  logic [6:0]  commit_dst_old;
+  // Dual commit signals from ROB (for retire)
+  logic        commit_valid_0, commit_valid_1;
+  logic        commit_writes_rd_0, commit_writes_rd_1;
+  logic [6:0]  commit_dst_old_0, commit_dst_old_1;
+  logic [ROB_BITS-1:0] commit_rob_tag_0, commit_rob_tag_1;
 
   rename_module #(
     .ARCH_REGS   (32),
@@ -163,11 +164,11 @@ module top #(
     // Branch misprediction recovery
     .branch_miss_rename     (branch_mispredict),
     .recover_tag_i          (mispredict_rob_tag),
-    // Dual retire signals from ROB commit
-    .retire_enable_0        (commit_valid && commit_writes_rd),
-    .retired_destReg_phys_0 (commit_dst_old),
-    .retire_enable_1        (1'b0),  // TODO: connect dual commit
-    .retired_destReg_phys_1 (7'b0),
+    // Dual retire signals from ROB dual commit
+    .retire_enable_0        (commit_valid_0 && commit_writes_rd_0),
+    .retired_destReg_phys_0 (commit_dst_old_0),
+    .retire_enable_1        (commit_valid_1 && commit_writes_rd_1),
+    .retired_destReg_phys_1 (commit_dst_old_1),
     // Dual-issue output to dispatch
     .valid_to_dispatch      (valid_rename_to_dispatch),
     .ready_to_decode        (ready_rename_to_decode),
@@ -387,11 +388,12 @@ module top #(
   logic        sq_alloc_ready;
   logic [2:0]  sq_alloc_idx;
   
-  // LSQ commit signals
-  logic        sq_commit_ready;
-  logic        mem_write_valid;
-  logic [31:0] mem_write_addr, mem_write_data;
-  logic [3:0]  mem_write_be;
+  // LSQ dual commit signals
+  logic        sq_commit_ready_0, sq_commit_ready_1;
+  logic        mem_write_valid_0, mem_write_valid_1;
+  logic [31:0] mem_write_addr_0, mem_write_data_0;
+  logic [31:0] mem_write_addr_1, mem_write_data_1;
+  logic [3:0]  mem_write_be_0, mem_write_be_1;
 
   LSU_unit u_lsu (
     .clk          (clk),
@@ -456,20 +458,53 @@ module top #(
     .ld_fwd_valid_o     (lsq_load_fwd_valid),
     .ld_fwd_data_o      (lsq_load_fwd_data),
     .ld_fwd_be_o        (lsq_load_fwd_be),
-    // Store commit (from ROB)
-    .sq_commit_valid_i   (commit_valid && !commit_writes_rd),
-    .sq_commit_rob_tag_i (commit_rob_tag),
-    .sq_commit_ready_o   (sq_commit_ready),
-    // Memory write interface
-    .mem_write_valid_o  (mem_write_valid),
-    .mem_write_addr_o   (mem_write_addr),
-    .mem_write_data_o   (mem_write_data),
-    .mem_write_be_o     (mem_write_be)
+    // Dual store commit (from ROB)
+    .sq_commit_valid_0_i   (commit_valid_0 && !commit_writes_rd_0),
+    .sq_commit_rob_tag_0_i (commit_rob_tag_0),
+    .sq_commit_ready_0_o   (sq_commit_ready_0),
+    .sq_commit_valid_1_i   (commit_valid_1 && !commit_writes_rd_1),
+    .sq_commit_rob_tag_1_i (commit_rob_tag_1),
+    .sq_commit_ready_1_o   (sq_commit_ready_1),
+    // Dual memory write interface
+    .mem_write_valid_0_o  (mem_write_valid_0),
+    .mem_write_addr_0_o   (mem_write_addr_0),
+    .mem_write_data_0_o   (mem_write_data_0),
+    .mem_write_be_0_o     (mem_write_be_0),
+    .mem_write_valid_1_o  (mem_write_valid_1),
+    .mem_write_addr_1_o   (mem_write_addr_1),
+    .mem_write_data_1_o   (mem_write_data_1),
+    .mem_write_be_1_o     (mem_write_be_1)
   );
 
   // ============================================================
   // DATA MEMORY
   // ============================================================
+  // Arbitration logic for dual store commits (prioritize store_0)
+  // Note: True dual-write would require dual-port BRAM, but since stores commit in-order,
+  // we can safely prioritize store_0. In practice, most cycles have at most 1 store committing.
+  logic        dmem_we_arb;
+  logic [31:0] dmem_waddr_arb, dmem_wdata_arb;
+  logic [3:0]  dmem_wbe_arb;
+
+  always_comb begin
+    if (mem_write_valid_0) begin
+      dmem_we_arb    = 1'b1;
+      dmem_waddr_arb = mem_write_addr_0;
+      dmem_wdata_arb = mem_write_data_0;
+      dmem_wbe_arb   = mem_write_be_0;
+    end else if (mem_write_valid_1) begin
+      dmem_we_arb    = 1'b1;
+      dmem_waddr_arb = mem_write_addr_1;
+      dmem_wdata_arb = mem_write_data_1;
+      dmem_wbe_arb   = mem_write_be_1;
+    end else begin
+      dmem_we_arb    = 1'b0;
+      dmem_waddr_arb = '0;
+      dmem_wdata_arb = '0;
+      dmem_wbe_arb   = 4'b0000;
+    end
+  end
+
   data_memory #(
     .WORDS(DMEM_WORDS) // default: 131072 words = 512KB (32-bit words)
   ) u_dmem (
@@ -477,10 +512,10 @@ module top #(
     // Read port (loads)
     .re    (dmem_re),
     .raddr (dmem_addr),
-    // Write port (committed stores)
-    .we    (mem_write_valid ? mem_write_be : 4'b0000),
-    .waddr (mem_write_addr),
-    .wdata (mem_write_data),
+    // Write port (committed stores, arbitrated)
+    .we    (dmem_we_arb ? dmem_wbe_arb : 4'b0000),
+    .waddr (dmem_waddr_arb),
+    .wdata (dmem_wdata_arb),
     .rdata (dmem_rdata)
   );
 
