@@ -29,6 +29,8 @@ INFO: [VRFC 10-2263] Analyzing SystemVerilog file "D:/Vivado_Project/116C_Honor/
 INFO: [VRFC 10-311] analyzing module fetch_module
 INFO: [VRFC 10-2263] Analyzing SystemVerilog file "D:/Vivado_Project/116C_Honor/189_ooo_processor_top/189_ooo_processor_top.srcs/sources_1/imports/new/free_list.sv" into library xil_defaultlib
 INFO: [VRFC 10-311] analyzing module free_list
+WARNING: [VRFC 10-10080] select on function call violates IEEE 1800 syntax [D:/Vivado_Project/116C_Honor/189_ooo_processor_top/189_ooo_processor_top.srcs/sources_1/imports/new/free_list.sv:74]
+WARNING: [VRFC 10-10080] select on function call violates IEEE 1800 syntax [D:/Vivado_Project/116C_Honor/189_ooo_processor_top/189_ooo_processor_top.srcs/sources_1/imports/new/free_list.sv:117]
 INFO: [VRFC 10-2263] Analyzing SystemVerilog file "D:/Vivado_Project/116C_Honor/189_ooo_processor_top/189_ooo_processor_top.srcs/sources_1/imports/new/i_cache.sv" into library xil_defaultlib
 INFO: [VRFC 10-311] analyzing module i_cache
 INFO: [VRFC 10-2263] Analyzing SystemVerilog file "D:/Vivado_Project/116C_Honor/189_ooo_processor_top/189_ooo_processor_top.srcs/sources_1/imports/new/imm_gen.sv" into library xil_defaultlib
@@ -45,6 +47,6 @@ INFO: [VRFC 10-2263] Analyzing SystemVerilog file "D:/Vivado_Project/116C_Honor/
 INFO: [VRFC 10-311] analyzing module rob_tag
 INFO: [VRFC 10-2263] Analyzing SystemVerilog file "D:/Vivado_Project/116C_Honor/189_ooo_processor_top/189_ooo_processor_top.srcs/sources_1/imports/new/top.sv" into library xil_defaultlib
 INFO: [VRFC 10-311] analyzing module top
-WARNING: [VRFC 10-2938] 'sq_alloc_ready' is already implicitly declared on line 379 [D:/Vivado_Project/116C_Honor/189_ooo_processor_top/189_ooo_processor_top.srcs/sources_1/imports/new/top.sv:449]
+WARNING: [VRFC 10-2938] 'sq_alloc_ready' is already implicitly declared on line 293 [D:/Vivado_Project/116C_Honor/189_ooo_processor_top/189_ooo_processor_top.srcs/sources_1/imports/new/top.sv:379]
 INFO: [VRFC 10-2263] Analyzing SystemVerilog file "D:/Vivado_Project/116C_Honor/189_ooo_processor_top/189_ooo_processor_top.srcs/sim_1/new/top_tb.sv" into library xil_defaultlib
 INFO: [VRFC 10-311] analyzing module top_tb

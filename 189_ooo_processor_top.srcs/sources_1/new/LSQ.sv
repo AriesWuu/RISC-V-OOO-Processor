@@ -235,6 +235,7 @@ module LSQ #(
   //===========================================================================
   // State Update
   //===========================================================================
+  logic commit_dual;
   always_ff @(posedge clk or posedge reset) begin
     if (reset) begin
       for (int i = 0; i < SQ_DEPTH; i++) begin
@@ -286,7 +287,6 @@ module LSQ #(
       end
       
       // Dual commit store (dequeue from head)
-      logic commit_dual;
       commit_dual = commit_match_0 && commit_match_1;
 
       if (commit_dual) begin

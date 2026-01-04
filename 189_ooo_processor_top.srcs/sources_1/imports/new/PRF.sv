@@ -25,9 +25,11 @@ module PRF #(
   input  logic [6:0]  wb_lsu_preg_i,
   input  logic [31:0] wb_lsu_data_i,
 
-  // busy scoreboard control
-  input  logic        set_busy_en_i,
-  input  logic [6:0]  set_busy_preg_i,
+  // busy scoreboard control (dual set_busy for dual-dispatch)
+  input  logic        set_busy_en_0_i,
+  input  logic [6:0]  set_busy_preg_0_i,
+  input  logic        set_busy_en_1_i,
+  input  logic [6:0]  set_busy_preg_1_i,
   input  logic        clr_busy_en_i,
   input  logic [6:0]  clr_busy_preg_i,
 
@@ -117,13 +119,19 @@ module PRF #(
         busy_lsu[wb_lsu_preg_i] <= 1'b0;
       end
 
-      // Set busy - update all copies
-      if (set_busy_en_i && set_busy_preg_i != 7'd0) begin
-        busy_alu[set_busy_preg_i] <= 1'b1;
-        busy_br[set_busy_preg_i]  <= 1'b1;
-        busy_lsu[set_busy_preg_i] <= 1'b1;
+      // Dual set busy ports - update all copies
+      if (set_busy_en_0_i && set_busy_preg_0_i != 7'd0) begin
+        busy_alu[set_busy_preg_0_i] <= 1'b1;
+        busy_br[set_busy_preg_0_i]  <= 1'b1;
+        busy_lsu[set_busy_preg_0_i] <= 1'b1;
       end
-      
+
+      if (set_busy_en_1_i && set_busy_preg_1_i != 7'd0) begin
+        busy_alu[set_busy_preg_1_i] <= 1'b1;
+        busy_br[set_busy_preg_1_i]  <= 1'b1;
+        busy_lsu[set_busy_preg_1_i] <= 1'b1;
+      end
+
       // Explicit clear busy - update all copies
       if (clr_busy_en_i && clr_busy_preg_i != 7'd0) begin
         busy_alu[clr_busy_preg_i] <= 1'b0;

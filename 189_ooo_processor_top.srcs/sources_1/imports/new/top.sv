@@ -274,11 +274,15 @@ module top #(
     // Branch completion (separate from writeback - BNE completes but doesn't write)
     .complete_br_valid_i   (complete_br_valid),
     .complete_br_rob_tag_i (complete_br_rob_tag),
-    // Commit outputs
-    .commit_valid_o   (commit_valid),
-    .commit_writes_rd_o(commit_writes_rd),
-    .commit_dst_old_o (commit_dst_old),
-    .commit_rob_tag_o (commit_rob_tag),
+    // Dual commit outputs
+    .commit_valid_0_o     (commit_valid_0),
+    .commit_writes_rd_0_o (commit_writes_rd_0),
+    .commit_dst_old_0_o   (commit_dst_old_0),
+    .commit_rob_tag_0_o   (commit_rob_tag_0),
+    .commit_valid_1_o     (commit_valid_1),
+    .commit_writes_rd_1_o (commit_writes_rd_1),
+    .commit_dst_old_1_o   (commit_dst_old_1),
+    .commit_rob_tag_1_o   (commit_rob_tag_1),
     // ROB head/tail for LSQ
     .rob_head_o       (rob_head_dispatch),
     .rob_tail_cp_o    (rob_tail_cp_dispatch),
@@ -446,10 +450,11 @@ module top #(
     .ld_fwd_data_o      (lsq_load_fwd_data),
     .ld_fwd_be_o        (lsq_load_fwd_be),
     // Dual store commit (from ROB)
-    .sq_commit_valid_0_i   (commit_valid_0 && !commit_writes_rd_0),
+    // Send all commits to LSQ; LSQ will check if ROB tag matches a store
+    .sq_commit_valid_0_i   (commit_valid_0),
     .sq_commit_rob_tag_0_i (commit_rob_tag_0),
     .sq_commit_ready_0_o   (sq_commit_ready_0),
-    .sq_commit_valid_1_i   (commit_valid_1 && !commit_writes_rd_1),
+    .sq_commit_valid_1_i   (commit_valid_1),
     .sq_commit_rob_tag_1_i (commit_rob_tag_1),
     .sq_commit_ready_1_o   (sq_commit_ready_1),
     // Dual memory write interface
@@ -509,7 +514,7 @@ module top #(
   // ============================================================
   // Output Assignments
   // ============================================================
-  assign pc_out = pc_fetch;
-  assign commit_valid_o = commit_valid;
+  // pc_out is already assigned near fetch_module (line 66)
+  assign commit_valid_o = commit_valid_0 || commit_valid_1;
 
 endmodule

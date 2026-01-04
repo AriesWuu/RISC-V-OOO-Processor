@@ -113,6 +113,7 @@ module ROB #(
   assign commit_rob_tag_1_o   = rob[head_next].rob_tag;
 
   logic [4:0] i;
+  logic alloc_dual;
   always_ff @(posedge clk or posedge reset) begin
     if(reset) begin
       head <= '0; 
@@ -195,7 +196,6 @@ module ROB #(
       // =====================
       // Dual Allocation (enqueue at tail and tail+1)
       // =====================
-      logic alloc_dual;
       alloc_dual = valid_0_i && valid_1_i && ready_0_o && ready_1_o;
 
       if (alloc_dual) begin

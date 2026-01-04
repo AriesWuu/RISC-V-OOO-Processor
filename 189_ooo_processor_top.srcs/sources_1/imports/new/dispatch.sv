@@ -184,9 +184,9 @@ module dispatch_module #(
     logic [31:0] br_src0_data_raw,  br_src1_data_raw;
     logic [31:0] lsu_src0_data_raw, lsu_src1_data_raw;
 
-    // Writeback and explicit busy-clear paths are not hooked up yet; only set busy on allocation
-    logic        prf_set_busy_en;
-    logic [6:0]  prf_set_busy_preg;
+    // Dual set_busy signals for dual-dispatch support
+    logic        prf_set_busy_en_0, prf_set_busy_en_1;
+    logic [6:0]  prf_set_busy_preg_0, prf_set_busy_preg_1;
 
     PRF #(
         .PHYS_REGS(PHYS_REGS)
@@ -210,9 +210,11 @@ module dispatch_module #(
         .wb_lsu_preg_i    (wb_lsu_prf_i),
         .wb_lsu_data_i    (wb_lsu_data_i),
 
-        // Busy scoreboard control
-        .set_busy_en_i    (prf_set_busy_en),
-        .set_busy_preg_i  (prf_set_busy_preg),
+        // Dual busy scoreboard control for dual-dispatch
+        .set_busy_en_0_i  (prf_set_busy_en_0),
+        .set_busy_preg_0_i(prf_set_busy_preg_0),
+        .set_busy_en_1_i  (prf_set_busy_en_1),
+        .set_busy_preg_1_i(prf_set_busy_preg_1),
         .clr_busy_en_i    (1'b0),
         .clr_busy_preg_i  ('0),
         // Replicated busy outputs for each RS
@@ -387,19 +389,32 @@ module dispatch_module #(
     // =====================
     logic                       rob_ready;
     logic [$clog2(ROB_DEPTH)-1:0] rob_tail_idx;
-    
+
     // Dual dispatch accept signals
     logic accept, accept_0, accept_1;
     logic dispatch_dual;  // True when both instructions can dispatch
+    logic both_alu;       // Both instructions are ALU type
+    logic structural_hazard; // Both instructions target same non-ALU RS
 
-    // Determine if we can dual-dispatch (both ALU instructions)
+    // Check for structural hazards (both instructions need same RS type)
+    assign both_alu = (pb_pkt_0.fu == 2'd0) && (pb_pkt_1.fu == 2'd0);
+    assign structural_hazard = pb_valid_0 && pb_valid_1 &&
+                               ((pb_pkt_0.fu == 2'd1) && (pb_pkt_1.fu == 2'd1)) || // Both branch
+                               ((pb_pkt_0.fu == 2'd2) && (pb_pkt_1.fu == 2'd2));   // Both LSU
+
+    // Determine if we can dual-dispatch:
+    // - Both instructions valid
+    // - Both are ALU (we have 2 ALU RS) OR no structural hazard
+    // - Both target RS have space
+    // - ROB has space for both
     assign dispatch_dual = pb_valid_0 && pb_valid_1 &&
-                          (pb_pkt_0.fu == 2'd0) && (pb_pkt_1.fu == 2'd0) &&
-                          pb_ready;
+                          both_alu &&                  // Currently only dual-dispatch ALU instructions
+                          (alu_alloc_ready && alu1_alloc_ready) && // Both ALU RS ready
+                          rob_ready;                   // ROB can accept both
 
     // Accept logic for each instruction
     assign accept   = pb_valid && pb_ready;    // Backward compatibility
-    assign accept_0 = pb_valid_0 && pb_ready;  // First instruction always accepted if valid
+    assign accept_0 = pb_valid_0 && pb_ready;  // First instruction always accepted if valid and ready
     assign accept_1 = dispatch_dual;            // Second only if dual-dispatch conditions met
 
     ROB #(.ROB_ENTRIES(ROB_DEPTH)) u_rob (
@@ -450,9 +465,10 @@ module dispatch_module #(
     );
 
     // =====================
-    // 5. Allocation control and packet assembly （combinational）
+    // 5. Allocation control and packet assembly (combinational)
     // =====================
     // ALU round-robin allocation pointer (0 = prefer ALU0, 1 = prefer ALU1)
+    // Only used for single-issue ALU instructions; dual-issue always uses both
     logic alu_rr_ptr;
 
     always_ff @(posedge clk or posedge reset) begin
@@ -461,43 +477,61 @@ module dispatch_module #(
         end else if (recover_i) begin
             // Reset to 0 on branch misprediction recovery
             alu_rr_ptr <= 1'b0;
-        end else if (accept && pb_pkt.fu == 2'd0) begin
-            // Toggle round-robin pointer when ALU instruction is allocated
+        end else if (accept_0 && (pb_pkt_0.fu == 2'd0) && !dispatch_dual) begin
+            // Toggle round-robin pointer only for single ALU allocation
             alu_rr_ptr <= ~alu_rr_ptr;
         end
     end
 
-    // Determine whether the target RS (based on FU type) has an available slot
-    logic target_rs_ready;
-    logic is_store_instr;
+    // Determine whether the target RS has available slots for both instructions
+    logic target_rs_ready_0, target_rs_ready_1;
+    logic is_store_instr_0, is_store_instr_1;
     logic prefer_alu0;  // Which ALU RS to try first based on round-robin
 
     // micro_op[1] = sw (store operation)
-    assign is_store_instr = (pb_pkt.fu == 2'd2) && pb_pkt.micro_op[1];
+    assign is_store_instr_0 = (pb_pkt_0.fu == 2'd2) && pb_pkt_0.micro_op[1];
+    assign is_store_instr_1 = (pb_pkt_1.fu == 2'd2) && pb_pkt_1.micro_op[1];
 
-    // For ALU instructions, implement round-robin with fallback:
-    // - Try preferred RS first (based on alu_rr_ptr)
-    // - If preferred RS is full, try the other ALU RS
-    // - Target is ready if EITHER ALU RS has space
+    // For each instruction, check if target RS has space
     always_comb begin
         prefer_alu0 = (alu_rr_ptr == 1'b0);
 
-        unique case (pb_pkt.fu)
-            2'd0: target_rs_ready = alu_alloc_ready | alu1_alloc_ready;  // Either ALU RS
-            2'd1: target_rs_ready = br_alloc_ready;
-            2'd2: target_rs_ready = lsu_alloc_ready;
-            default: target_rs_ready = 1'b0;
+        // Instruction 0 RS readiness
+        unique case (pb_pkt_0.fu)
+            2'd0: target_rs_ready_0 = alu_alloc_ready | alu1_alloc_ready;  // Either ALU RS
+            2'd1: target_rs_ready_0 = br_alloc_ready;
+            2'd2: target_rs_ready_0 = lsu_alloc_ready;
+            default: target_rs_ready_0 = 1'b0;
+        endcase
+
+        // Instruction 1 RS readiness (for dual-dispatch, needs separate ALU RS)
+        unique case (pb_pkt_1.fu)
+            2'd0: target_rs_ready_1 = alu_alloc_ready && alu1_alloc_ready;  // Need BOTH ALU RS for dual
+            2'd1: target_rs_ready_1 = br_alloc_ready;
+            2'd2: target_rs_ready_1 = lsu_alloc_ready;
+            default: target_rs_ready_1 = 1'b0;
         endcase
     end
 
-    // Skid consumer is ready only if:
-    // 1. ROB can accept
-    // 2. Target RS has room
-    // 3. For store: LSQ has room
-    assign pb_ready = rob_ready & target_rs_ready & (!is_store_instr | lsq_alloc_ready_i);
+    // Pipeline buffer ready logic:
+    // For dual-dispatch: ROB ready AND both RS ready AND store constraints
+    // For single-dispatch: ROB ready AND first RS ready AND store constraints
+    logic pb_ready_dual, pb_ready_single;
 
-    // Only on accept do we assert alloc_valid for the chosen RS and build the rs_pkt
-    // Also mark the destination PRF busy when the instruction writes back
+    assign pb_ready_dual   = rob_ready &&
+                            target_rs_ready_1 &&  // Includes both ALU RS ready check
+                            (!is_store_instr_0 || lsq_alloc_ready_i) &&
+                            (!is_store_instr_1 || lsq_alloc_ready_i);
+
+    assign pb_ready_single = rob_ready &&
+                            target_rs_ready_0 &&
+                            (!is_store_instr_0 || lsq_alloc_ready_i);
+
+    // pb_ready true if we can accept at least instruction 0
+    assign pb_ready = dispatch_dual ? pb_ready_dual : pb_ready_single;
+
+    // Dual-issue allocation logic
+    // Build RS packets and set busy for both instructions
     always_comb begin
         // Default assignments
         alu_alloc_valid  = 1'b0;
@@ -508,66 +542,104 @@ module dispatch_module #(
         alu1_alloc_pkt   = '0;
         br_alloc_pkt     = '0;
         lsu_alloc_pkt    = '0;
-        prf_set_busy_en  = 1'b0;
-        prf_set_busy_preg = '0;
+        prf_set_busy_en_0  = 1'b0;
+        prf_set_busy_preg_0 = '0;
+        prf_set_busy_en_1  = 1'b0;
+        prf_set_busy_preg_1 = '0;
 
-        if (accept) begin
-            // Build a common rs_pkt_t structure
-            rs_pkt_t pkt;
-            pkt.valid       = 1'b1;
-            pkt.micro_op    = pb_pkt.micro_op;
-            pkt.dst_prf     = pb_pkt.dst_prf_new;
-            pkt.src0_prf    = pb_pkt.src0_prf;
-            pkt.src0_ready  = 1'b0; // RS recomputes readiness from the busy scoreboard
-            pkt.src1_prf    = pb_pkt.src1_prf;
-            pkt.src1_ready  = 1'b0;
-            pkt.imm         = pb_pkt.imm;
-            pkt.fu          = pb_pkt.fu;
-            pkt.rob_tag     = rob_tail_idx;
-            pkt.pc          = pb_pkt.pc;
-            pkt.pred_hit    = pb_pkt.pred_hit;
-            pkt.pred_taken  = pb_pkt.pred_taken;
-            pkt.pred_target = pb_pkt.pred_target;
+        // ===== Instruction 0 allocation =====
+        if (accept_0) begin
+            rs_pkt_t pkt0;
+            pkt0.valid       = 1'b1;
+            pkt0.micro_op    = pb_pkt_0.micro_op;
+            pkt0.dst_prf     = pb_pkt_0.dst_prf_new;
+            pkt0.src0_prf    = pb_pkt_0.src0_prf;
+            pkt0.src0_ready  = 1'b0; // RS recomputes readiness
+            pkt0.src1_prf    = pb_pkt_0.src1_prf;
+            pkt0.src1_ready  = 1'b0;
+            pkt0.imm         = pb_pkt_0.imm;
+            pkt0.fu          = pb_pkt_0.fu;
+            pkt0.rob_tag     = pb_pkt_0.rob_tag;
+            pkt0.pc          = pb_pkt_0.pc;
+            pkt0.pred_hit    = pb_pkt_0.pred_hit;
+            pkt0.pred_taken  = pb_pkt_0.pred_taken;
+            pkt0.pred_target = pb_pkt_0.pred_target;
 
-            unique case (pb_pkt.fu)
-                2'd0: begin
-                    // ALU instruction - use round-robin with fallback
-                    if (prefer_alu0) begin
-                        // Prefer ALU0, fallback to ALU1 if ALU0 is full
-                        if (alu_alloc_ready) begin
-                            alu_alloc_valid = 1'b1;
-                            alu_alloc_pkt   = pkt;
-                        end else if (alu1_alloc_ready) begin
-                            alu1_alloc_valid = 1'b1;
-                            alu1_alloc_pkt   = pkt;
-                        end
-                    end else begin
-                        // Prefer ALU1, fallback to ALU0 if ALU1 is full
-                        if (alu1_alloc_ready) begin
-                            alu1_alloc_valid = 1'b1;
-                            alu1_alloc_pkt   = pkt;
-                        end else if (alu_alloc_ready) begin
-                            alu_alloc_valid = 1'b1;
-                            alu_alloc_pkt   = pkt;
+            // Allocate instruction 0 to appropriate RS
+            if (dispatch_dual) begin
+                // Dual-dispatch: allocate first ALU to ALU0
+                alu_alloc_valid = 1'b1;
+                alu_alloc_pkt   = pkt0;
+            end else begin
+                // Single-dispatch: use round-robin for ALU
+                unique case (pb_pkt_0.fu)
+                    2'd0: begin
+                        // ALU instruction - round-robin with fallback
+                        if (prefer_alu0) begin
+                            if (alu_alloc_ready) begin
+                                alu_alloc_valid = 1'b1;
+                                alu_alloc_pkt   = pkt0;
+                            end else if (alu1_alloc_ready) begin
+                                alu1_alloc_valid = 1'b1;
+                                alu1_alloc_pkt   = pkt0;
+                            end
+                        end else begin
+                            if (alu1_alloc_ready) begin
+                                alu1_alloc_valid = 1'b1;
+                                alu1_alloc_pkt   = pkt0;
+                            end else if (alu_alloc_ready) begin
+                                alu_alloc_valid = 1'b1;
+                                alu_alloc_pkt   = pkt0;
+                            end
                         end
                     end
-                end
-                2'd1: begin
-                    br_alloc_valid  = 1'b1;
-                    br_alloc_pkt    = pkt;
-                end
-                2'd2: begin
-                    lsu_alloc_valid = 1'b1;
-                    lsu_alloc_pkt   = pkt;
-                end
-                default: begin
-                    // No RS selected
-                end
-            endcase
+                    2'd1: begin
+                        br_alloc_valid = 1'b1;
+                        br_alloc_pkt   = pkt0;
+                    end
+                    2'd2: begin
+                        lsu_alloc_valid = 1'b1;
+                        lsu_alloc_pkt   = pkt0;
+                    end
+                    default: begin
+                        // No RS selected
+                    end
+                endcase
+            end
 
-            if (pb_pkt.writes_rd && (pb_pkt.dst_prf_new != '0)) begin
-                prf_set_busy_en   = 1'b1;
-                prf_set_busy_preg = pb_pkt.dst_prf_new[6:0];
+            // Mark destination busy for instruction 0 (use port 0)
+            if (pb_pkt_0.writes_rd && (pb_pkt_0.dst_prf_new != '0)) begin
+                prf_set_busy_en_0   = 1'b1;
+                prf_set_busy_preg_0 = pb_pkt_0.dst_prf_new[6:0];
+            end
+        end
+
+        // ===== Instruction 1 allocation (only in dual-dispatch mode) =====
+        if (accept_1) begin
+            rs_pkt_t pkt1;
+            pkt1.valid       = 1'b1;
+            pkt1.micro_op    = pb_pkt_1.micro_op;
+            pkt1.dst_prf     = pb_pkt_1.dst_prf_new;
+            pkt1.src0_prf    = pb_pkt_1.src0_prf;
+            pkt1.src0_ready  = 1'b0;
+            pkt1.src1_prf    = pb_pkt_1.src1_prf;
+            pkt1.src1_ready  = 1'b0;
+            pkt1.imm         = pb_pkt_1.imm;
+            pkt1.fu          = pb_pkt_1.fu;
+            pkt1.rob_tag     = pb_pkt_1.rob_tag;
+            pkt1.pc          = pb_pkt_1.pc;
+            pkt1.pred_hit    = pb_pkt_1.pred_hit;
+            pkt1.pred_taken  = pb_pkt_1.pred_taken;
+            pkt1.pred_target = pb_pkt_1.pred_target;
+
+            // In dual-dispatch mode, always allocate second ALU to ALU1
+            alu1_alloc_valid = 1'b1;
+            alu1_alloc_pkt   = pkt1;
+
+            // Mark destination busy for instruction 1 (use port 1)
+            if (pb_pkt_1.writes_rd && (pb_pkt_1.dst_prf_new != '0)) begin
+                prf_set_busy_en_1   = 1'b1;
+                prf_set_busy_preg_1 = pb_pkt_1.dst_prf_new[6:0];
             end
         end
     end
@@ -579,7 +651,7 @@ module dispatch_module #(
     // Store allocation: when a store dispatches to LSU RS
     // micro_op[1] = sw (store operation)
     assign store_alloc_valid_o   = lsu_alloc_valid && lsu_alloc_pkt.micro_op[1];
-    assign store_alloc_rob_tag_o = rob_tail_idx;
+    assign store_alloc_rob_tag_o = lsu_alloc_pkt.rob_tag;  // Use instruction's actual ROB tag, not tail pointer!
     
     // Commit ROB tag output (commit always happens at head)
     assign commit_rob_tag_o = rob_head_out;

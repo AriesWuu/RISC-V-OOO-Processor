@@ -73,6 +73,7 @@ module free_list #(
   assign new_preg_0 = buffer_mem[rd_ptr[INDEX_BITS-1:0]];
   assign new_preg_1 = buffer_mem[bump(rd_ptr)[INDEX_BITS-1:0]];
 
+  logic retire_dual;
   always_ff @(posedge clk) begin
     if (reset) begin
       // Initialize pointers: rd at 0, wr at 0 with flip bit set (full state)
@@ -108,7 +109,6 @@ module free_list #(
         end
 
         // Dual retire logic (write back up to 2 physical registers)
-        logic retire_dual;
         retire_dual = retire_en_0 && retire_en_1;
 
         if (retire_dual) begin
