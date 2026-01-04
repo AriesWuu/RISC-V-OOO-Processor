@@ -7,15 +7,25 @@ module ROB #(
   input  logic recover_i,
   input  logic [$clog2(ROB_ENTRIES)-1:0] mispredict_rob_tag_i, // ROB tag of mispredicting branch
 
-  // Allocation from dispatch
-  input  logic valid_i,
-  output logic ready_o,
-  input  logic is_branch_i,
-  input  logic writes_rd_i,
-  input  logic [6:0] dst_new_i,
-  input  logic [6:0] dst_old_i,
-  input  logic [$clog2(ROB_ENTRIES)-1:0] rob_tag_i,
-  output logic [$clog2(ROB_ENTRIES)-1:0] tag_o,
+  // Dual allocation from dispatch
+  input  logic valid_0_i,
+  input  logic is_branch_0_i,
+  input  logic writes_rd_0_i,
+  input  logic [6:0] dst_new_0_i,
+  input  logic [6:0] dst_old_0_i,
+  input  logic [$clog2(ROB_ENTRIES)-1:0] rob_tag_0_i,
+  output logic [$clog2(ROB_ENTRIES)-1:0] tag_0_o,
+  output logic ready_0_o,
+
+  input  logic valid_1_i,
+  input  logic is_branch_1_i,
+  input  logic writes_rd_1_i,
+  input  logic [6:0] dst_new_1_i,
+  input  logic [6:0] dst_old_1_i,
+  input  logic [$clog2(ROB_ENTRIES)-1:0] rob_tag_1_i,
+  output logic [$clog2(ROB_ENTRIES)-1:0] tag_1_o,
+  output logic ready_1_o,
+
   output logic full_o,
   
   // Head and recovery point outputs for RS speculation check
@@ -32,11 +42,17 @@ module ROB #(
   input  logic        complete_lsu_valid_i,
   input  logic [$clog2(ROB_ENTRIES)-1:0] complete_lsu_tag_i,
 
-  // Commit outputs (broadcast to rename/free_list)
+  // Dual commit outputs (broadcast to rename/free_list)
   // NOTE: Commit has valid but NO ready - downstream must always accept!
-  output logic        commit_valid_o,
-  output logic        commit_writes_rd_o,
-  output logic [6:0]  commit_dst_old_o     // Old PRF to return to free list
+  output logic        commit_valid_0_o,
+  output logic        commit_writes_rd_0_o,
+  output logic [6:0]  commit_dst_old_0_o,     // Old PRF to return to free list
+  output logic [$clog2(ROB_ENTRIES)-1:0] commit_rob_tag_0_o,
+
+  output logic        commit_valid_1_o,
+  output logic        commit_writes_rd_1_o,
+  output logic [6:0]  commit_dst_old_1_o,
+  output logic [$clog2(ROB_ENTRIES)-1:0] commit_rob_tag_1_o
 );
   typedef struct packed {
     logic        valid;
@@ -50,13 +66,20 @@ module ROB #(
   rob_entry_t rob[ROB_ENTRIES];
   logic [$clog2(ROB_ENTRIES)-1:0] head, tail;
   // one-slot-empty scheme: full when next_tail == head, empty when head == tail
-  logic [$clog2(ROB_ENTRIES)-1:0] next_tail; // tail+1
+  logic [$clog2(ROB_ENTRIES)-1:0] next_tail, next_tail_2;
 
-  // Compute next_tail before checking fullness
+  // Compute next_tail and next_tail+2 for dual allocation
   assign next_tail   = (tail == ROB_ENTRIES-1) ? '0 : (tail + 1'b1);
+  assign next_tail_2 = (tail >= ROB_ENTRIES-2) ? (tail + 2 - ROB_ENTRIES) : (tail + 2);
+
+  // Fullness checking for dual allocation
   assign full_o      = (next_tail == head);
-  assign ready_o     = !full_o;
-  assign tag_o       = tail;
+  assign ready_0_o   = !full_o;  // At least 1 slot available
+  assign ready_1_o   = (next_tail_2 != head) && (next_tail != head);  // At least 2 slots available
+
+  // Tag outputs
+  assign tag_0_o     = tail;
+  assign tag_1_o     = next_tail;
   
   // Calculate recovery point directly from mispredicting branch's ROB tag
   logic [$clog2(ROB_ENTRIES)-1:0] recovery_tail_cp;
@@ -67,15 +90,27 @@ module ROB #(
   assign tail_cp_o   = recovery_tail_cp;
 
   // =====================
-  // Commit logic (in-order, from head)
+  // Dual commit logic (in-order, from head and head+1)
   // =====================
-  // Commit when head entry is valid AND complete AND not recovering
-  // NOTE: commit_valid_o is output-only, no ready signal - downstream MUST accept!
-  logic head_can_commit;
-  assign head_can_commit   = rob[head].valid && rob[head].complete && !recover_i;
-  assign commit_valid_o    = head_can_commit;
-  assign commit_writes_rd_o= rob[head].writes_rd;
-  assign commit_dst_old_o  = rob[head].dst_prf_old;
+  logic [$clog2(ROB_ENTRIES)-1:0] head_next;
+  assign head_next = (head == ROB_ENTRIES-1) ? '0 : (head + 1'b1);
+
+  logic head_can_commit_0, head_can_commit_1, commit_dual;
+  assign head_can_commit_0 = rob[head].valid && rob[head].complete && !recover_i;
+  assign head_can_commit_1 = rob[head_next].valid && rob[head_next].complete && !recover_i;
+  assign commit_dual       = head_can_commit_0 && head_can_commit_1;
+
+  // First commit (always from head if ready)
+  assign commit_valid_0_o     = head_can_commit_0;
+  assign commit_writes_rd_0_o = rob[head].writes_rd;
+  assign commit_dst_old_0_o   = rob[head].dst_prf_old;
+  assign commit_rob_tag_0_o   = rob[head].rob_tag;
+
+  // Second commit (only if dual commit)
+  assign commit_valid_1_o     = commit_dual;
+  assign commit_writes_rd_1_o = rob[head_next].writes_rd;
+  assign commit_dst_old_1_o   = rob[head_next].dst_prf_old;
+  assign commit_rob_tag_1_o   = rob[head_next].rob_tag;
 
   logic [4:0] i;
   always_ff @(posedge clk or posedge reset) begin
@@ -140,27 +175,59 @@ module ROB #(
       end
 
       // =====================
-      // Commit (dequeue from head, in-order)
+      // Dual commit (dequeue from head, in-order)
       // =====================
-      if (head_can_commit) begin
+      if (commit_dual) begin
+        // Commit both head and head+1
         rob[head].valid <= 1'b0;
         rob[head].complete <= 1'b0;
-        head <= (head == ROB_ENTRIES-1) ? '0 : (head + 1'b1);
+        rob[head_next].valid <= 1'b0;
+        rob[head_next].complete <= 1'b0;
+        // Advance head by 2
+        head <= (head >= ROB_ENTRIES-2) ? (head + 2 - ROB_ENTRIES) : (head + 2);
+      end else if (head_can_commit_0) begin
+        // Commit only head
+        rob[head].valid <= 1'b0;
+        rob[head].complete <= 1'b0;
+        head <= head_next;
       end
 
       // =====================
-      // Allocate (enqueue at tail)
+      // Dual Allocation (enqueue at tail and tail+1)
       // =====================
-      if (valid_i && ready_o) begin
-        rob[tail].valid      <= 1'b1;
-        rob[tail].complete   <= 1'b0;
-        rob[tail].is_branch  <= is_branch_i;
-        rob[tail].writes_rd  <= writes_rd_i;
-        rob[tail].dst_prf_new<= dst_new_i;
-        rob[tail].dst_prf_old<= dst_old_i;
-        rob[tail].rob_tag    <= rob_tag_i;
+      logic alloc_dual;
+      alloc_dual = valid_0_i && valid_1_i && ready_0_o && ready_1_o;
 
-        tail  <= (tail == ROB_ENTRIES-1) ? '0 : (tail + 1'b1);
+      if (alloc_dual) begin
+        // Allocate both instructions
+        rob[tail].valid       <= 1'b1;
+        rob[tail].complete    <= 1'b0;
+        rob[tail].is_branch   <= is_branch_0_i;
+        rob[tail].writes_rd   <= writes_rd_0_i;
+        rob[tail].dst_prf_new <= dst_new_0_i;
+        rob[tail].dst_prf_old <= dst_old_0_i;
+        rob[tail].rob_tag     <= rob_tag_0_i;
+
+        rob[next_tail].valid       <= 1'b1;
+        rob[next_tail].complete    <= 1'b0;
+        rob[next_tail].is_branch   <= is_branch_1_i;
+        rob[next_tail].writes_rd   <= writes_rd_1_i;
+        rob[next_tail].dst_prf_new <= dst_new_1_i;
+        rob[next_tail].dst_prf_old <= dst_old_1_i;
+        rob[next_tail].rob_tag     <= rob_tag_1_i;
+
+        tail <= next_tail_2;
+      end else if (valid_0_i && ready_0_o) begin
+        // Allocate only first instruction
+        rob[tail].valid       <= 1'b1;
+        rob[tail].complete    <= 1'b0;
+        rob[tail].is_branch   <= is_branch_0_i;
+        rob[tail].writes_rd   <= writes_rd_0_i;
+        rob[tail].dst_prf_new <= dst_new_0_i;
+        rob[tail].dst_prf_old <= dst_old_0_i;
+        rob[tail].rob_tag     <= rob_tag_0_i;
+
+        tail <= next_tail;
       end
     end
   end
