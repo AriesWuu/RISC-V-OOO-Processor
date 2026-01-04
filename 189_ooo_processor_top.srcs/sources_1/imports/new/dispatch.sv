@@ -89,11 +89,16 @@ module dispatch_module #(
     input  logic        complete_br_valid_i,
     input  logic [$clog2(ROB_DEPTH)-1:0] complete_br_rob_tag_i,
 
-    // Commit outputs (broadcast to rename - NO ready signal, must always accept!)
-    output logic        commit_valid_o,
-    output logic        commit_writes_rd_o,
-    output logic [6:0]  commit_dst_old_o,
-    output logic [$clog2(ROB_DEPTH)-1:0] commit_rob_tag_o,
+    // Dual commit outputs (broadcast to rename - NO ready signal, must always accept!)
+    output logic        commit_valid_0_o,
+    output logic        commit_writes_rd_0_o,
+    output logic [6:0]  commit_dst_old_0_o,
+    output logic [$clog2(ROB_DEPTH)-1:0] commit_rob_tag_0_o,
+
+    output logic        commit_valid_1_o,
+    output logic        commit_writes_rd_1_o,
+    output logic [6:0]  commit_dst_old_1_o,
+    output logic [$clog2(ROB_DEPTH)-1:0] commit_rob_tag_1_o,
     
     // ROB head/tail for LSQ age comparison
     output logic [$clog2(ROB_DEPTH)-1:0] rob_head_o,
@@ -425,10 +430,15 @@ module dispatch_module #(
         .complete_br_tag_i    (complete_br_rob_tag_i), // Use dedicated completion tag
         .complete_lsu_valid_i (wb_lsu_valid_i),
         .complete_lsu_tag_i   (wb_lsu_rob_tag_i),
-        // Commit outputs
-        .commit_valid_o       (commit_valid_o),
-        .commit_writes_rd_o   (commit_writes_rd_o),
-        .commit_dst_old_o     (commit_dst_old_o)
+        // Dual commit outputs
+        .commit_valid_0_o       (commit_valid_0_o),
+        .commit_writes_rd_0_o   (commit_writes_rd_0_o),
+        .commit_dst_old_0_o     (commit_dst_old_0_o),
+        .commit_rob_tag_0_o     (commit_rob_tag_0_o),
+        .commit_valid_1_o       (commit_valid_1_o),
+        .commit_writes_rd_1_o   (commit_writes_rd_1_o),
+        .commit_dst_old_1_o     (commit_dst_old_1_o),
+        .commit_rob_tag_1_o     (commit_rob_tag_1_o)
     );
 
     // =====================
