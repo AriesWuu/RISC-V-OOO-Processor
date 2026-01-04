@@ -44,33 +44,35 @@ module top #(
   // ============================================================
   // STAGE 1: FETCH
   // ============================================================
-  logic [31:0] pc_fetch;
-  logic [31:0] instr_fetch;
-  logic        valid_fetch;
-  logic        ready_out_fetch;
+  fetch_dual_pkt_t fetch_pkt;
+  logic            valid_fetch;
+  logic            ready_out_fetch;
 
   fetch_module #(
     .WORDS   (WORDS),
     .MEMFILE (MEMFILE)
   ) u_fetch (
-    .clk       (clk),
-    .reset     (reset),
-    .pc_src    (branch_mispredict),
-    .pc_branch (branch_target),
-    .pred_taken_i (bp_pred_taken_fetch),
-    .pred_target_i(bp_pred_target_fetch),
-    .ready_out (ready_out_fetch),
-    .valid_in  (valid_fetch),
-    .pc        (pc_fetch),
-    .instr     (instr_fetch)
+    .clk            (clk),
+    .reset          (reset),
+    .pc_src         (branch_mispredict),
+    .pc_branch      (branch_target),
+    .pred_taken_0_i (bp_pred_taken_fetch),
+    .pred_target_0_i(bp_pred_target_fetch),
+    .pred_taken_1_i (1'b0),  // TODO: connect to dual BP
+    .pred_target_1_i(32'h0),
+    .ready_out      (ready_out_fetch),
+    .valid_in       (valid_fetch),
+    .fetch_pkt      (fetch_pkt)
   );
+
+  assign pc_out = fetch_pkt.pc0;  // For observation
 
   branch_predictor #(
     .ENTRIES(8)
   ) u_bp (
     .clk            (clk),
     .reset          (reset),
-    .fetch_pc_i     (pc_fetch),
+    .fetch_pc_i     (fetch_pkt.pc0),
     .pred_hit_o     (bp_pred_hit_fetch),
     .pred_taken_o   (bp_pred_taken_fetch),
     .pred_target_o  (bp_pred_target_fetch),
@@ -84,138 +86,63 @@ module top #(
   // ============================================================
   // Skid Buffer: Fetch -> Decode
   // ============================================================
-  logic        valid_fetch_to_decode;
-  logic        ready_decode_to_fetch;
-  logic [31:0] pc_decode;
-  logic [31:0] instr_decode;
-
-  logic        pred_hit_decode;
-  logic        pred_taken_decode;
-  logic [31:0] pred_target_decode;
+  logic            valid_fetch_to_decode;
+  logic            ready_decode_to_fetch;
+  fetch_dual_pkt_t fetch_pkt_decode;
 
   pipeline_skid_buffer_struct #(
-    .T(logic [97:0])
+    .T(fetch_dual_pkt_t)
   ) u_skid_fetch_decode (
     .clk       (clk),
     .reset     (reset),
     .flush     (branch_mispredict),
     .valid_in  (valid_fetch),
     .ready_in  (ready_out_fetch),
-    .data_in   ({pc_fetch, instr_fetch, bp_pred_hit_fetch, bp_pred_taken_fetch, bp_pred_target_fetch}),
+    .data_in   (fetch_pkt),
     .valid_out (valid_fetch_to_decode),
     .ready_out (ready_decode_to_fetch),
-    .data_out  ({pc_decode, instr_decode, pred_hit_decode, pred_taken_decode, pred_target_decode})
+    .data_out  (fetch_pkt_decode)
   );
 
   // ============================================================
   // STAGE 2: DECODE
   // ============================================================
-  logic [4:0]  srcReg1_decode, srcReg2_decode, destReg_decode;
-  logic [31:0] imm_decode;
-  logic        hasImm_decode;
-  logic [1:0]  fu_decode;
-  logic        regWrite_decode, aluSrc_decode;
-  logic        branch_decode, isJump_decode;
-  logic        loadByte_decode, storeHalf_decode;
-  logic        memRead_decode, memWrite_decode, memToReg_decode;
-  logic [3:0]  alu_ctrl_decode;
+  decode_dual_pkt_t decode_pkt_decode;
 
   decode_module u_decode (
-    .clk       (clk),
-    .reset     (reset),
-    .instr     (instr_decode),
-    .srcReg1   (srcReg1_decode),
-    .srcReg2   (srcReg2_decode),
-    .destReg   (destReg_decode),
-    .imm       (imm_decode),
-    .hasImm    (hasImm_decode),
-    .fu        (fu_decode),
-    .regWrite  (regWrite_decode),
-    .aluSrc    (aluSrc_decode),
-    .branch    (branch_decode),
-    .isJump    (isJump_decode),
-    .loadByte  (loadByte_decode),
-    .storeHalf (storeHalf_decode),
-    .memRead   (memRead_decode),
-    .memWrite  (memWrite_decode),
-    .memToReg  (memToReg_decode),
-    .alu_ctrl  (alu_ctrl_decode)
+    .clk        (clk),
+    .reset      (reset),
+    .fetch_pkt  (fetch_pkt_decode),
+    .decode_pkt (decode_pkt_decode)
   );
 
   // ============================================================
   // Skid Buffer: Decode -> Rename
   // ============================================================
-  logic        valid_decode_to_rename;
-  logic        ready_rename_to_decode;
-  decode_pkt_t decode_pkt_in, decode_pkt_out;
-
-  // Pack decode outputs into struct
-  assign decode_pkt_in.pc        = pc_decode;
-  assign decode_pkt_in.pred_hit  = pred_hit_decode;
-  assign decode_pkt_in.pred_taken= pred_taken_decode;
-  assign decode_pkt_in.pred_target = pred_target_decode;
-  assign decode_pkt_in.srcReg1   = srcReg1_decode;
-  assign decode_pkt_in.srcReg2   = srcReg2_decode;
-  assign decode_pkt_in.destReg   = destReg_decode;
-  assign decode_pkt_in.imm       = imm_decode;
-  assign decode_pkt_in.fu        = fu_decode;
-  assign decode_pkt_in.regWrite  = regWrite_decode;
-  assign decode_pkt_in.aluSrc    = aluSrc_decode;
-  assign decode_pkt_in.branch    = branch_decode;
-  assign decode_pkt_in.isJump    = isJump_decode;
-  assign decode_pkt_in.memRead   = memRead_decode;
-  assign decode_pkt_in.memWrite  = memWrite_decode;
-  assign decode_pkt_in.loadByte  = loadByte_decode;
-  assign decode_pkt_in.storeHalf = storeHalf_decode;
-  assign decode_pkt_in.alu_ctrl  = alu_ctrl_decode;
+  logic             valid_decode_to_rename;
+  logic             ready_rename_to_decode;
+  decode_dual_pkt_t decode_pkt_rename;
 
   pipeline_skid_buffer_struct #(
-    .T(decode_pkt_t)
+    .T(decode_dual_pkt_t)
   ) u_skid_decode_rename (
     .clk       (clk),
     .reset     (reset),
     .flush     (branch_mispredict),
     .valid_in  (valid_fetch_to_decode),
     .ready_in  (ready_decode_to_fetch),
-    .data_in   (decode_pkt_in),
+    .data_in   (decode_pkt_decode),
     .valid_out (valid_decode_to_rename),
     .ready_out (ready_rename_to_decode),
-    .data_out  (decode_pkt_out)
+    .data_out  (decode_pkt_rename)
   );
-
-  // Alias decode packet fields for rename stage
-  wire [31:0] pc_rename        = decode_pkt_out.pc;
-  wire        pred_hit_rename  = decode_pkt_out.pred_hit;
-  wire        pred_taken_rename = decode_pkt_out.pred_taken;
-  wire [31:0] pred_target_rename = decode_pkt_out.pred_target;
-  wire [4:0]  srcReg1_rename   = decode_pkt_out.srcReg1;
-  wire [4:0]  srcReg2_rename   = decode_pkt_out.srcReg2;
-  wire [4:0]  destReg_rename   = decode_pkt_out.destReg;
-  wire [31:0] imm_rename       = decode_pkt_out.imm;
-  wire [1:0]  fu_rename        = decode_pkt_out.fu;
-  wire        regWrite_rename  = decode_pkt_out.regWrite;
-  wire        aluSrc_rename    = decode_pkt_out.aluSrc;
-  wire        branch_rename    = decode_pkt_out.branch;
-  wire        isJump_rename    = decode_pkt_out.isJump;
-  wire        memRead_rename   = decode_pkt_out.memRead;
-  wire        memWrite_rename  = decode_pkt_out.memWrite;
-  wire        loadByte_rename  = decode_pkt_out.loadByte;
-  wire        storeHalf_rename = decode_pkt_out.storeHalf;
-  wire [3:0]  alu_ctrl_rename  = decode_pkt_out.alu_ctrl;
 
   // ============================================================
   // STAGE 3: RENAME
   // ============================================================
-  logic        valid_rename_to_dispatch;
-  logic        ready_dispatch_to_rename;
-  logic [6:0]  srcReg1_phys, srcReg2_phys, destReg_phys, oldDest_phys;
-  logic [ROB_BITS-1:0] rob_tag_rename;
-  logic [6:0]  micro_op_rename;
-  logic [1:0]  fu_rename_out;
-  logic        is_branch_rename_out, writes_rd_rename_out;
-  logic [31:0] imm_rename_out, pc_rename_out;
-  logic        pred_hit_rename_out, pred_taken_rename_out;
-  logic [31:0] pred_target_rename_out;
+  logic             valid_rename_to_dispatch;
+  logic             ready_dispatch_to_rename;
+  rename_dual_pkt_t rename_pkt;
 
   // Commit signals from ROB (for retire)
   logic        commit_valid;
@@ -227,54 +154,24 @@ module top #(
     .PHYS_REGS   (PHYS_REGS),
     .ROB_ENTRIES (ROB_ENTRIES)
   ) u_rename (
-    .clk                 (clk),
-    .reset               (reset),
-    // From decode skid buffer
-    .ready_from_dispatch (ready_dispatch_to_rename),
-    .valid_from_decode   (valid_decode_to_rename),
-    .srcReg1_arch        (srcReg1_rename),
-    .srcReg2_arch        (srcReg2_rename),
-    .destReg_arch        (destReg_rename),
-    .regWrite_rename     (regWrite_rename),
-    .branch_rename       (branch_rename),
-    // Control signals from decode
-    .fu_i                (fu_rename),
-    .alu_ctrl_i          (alu_ctrl_rename),
-    .aluSrc_i            (aluSrc_rename),
-    .isJump_i            (isJump_rename),
-    .memRead_i           (memRead_rename),
-    .memWrite_i          (memWrite_rename),
-    .loadByte_i          (loadByte_rename),
-    .storeHalf_i         (storeHalf_rename),
-    .imm_i               (imm_rename),
-    .pc_i                (pc_rename),
-    .pred_hit_i          (pred_hit_rename),
-    .pred_taken_i        (pred_taken_rename),
-    .pred_target_i       (pred_target_rename),
+    .clk                    (clk),
+    .reset                  (reset),
+    // Dual-issue input from decode skid buffer
+    .ready_from_dispatch    (ready_dispatch_to_rename),
+    .decode_pkt_i           (decode_pkt_rename),
+    .valid_from_decode      (valid_decode_to_rename),
     // Branch misprediction recovery
-    .branch_miss_rename  (branch_mispredict),
-    .recover_tag_i       (mispredict_rob_tag),  // ROB tag of mispredicting branch
-    // Retire signals from ROB commit
-    .retire_enable       (commit_valid && commit_writes_rd),
-    .retired_destReg_phys(commit_dst_old),
-    // Outputs to dispatch
-    .valid_to_dispatch   (valid_rename_to_dispatch),
-    .ready_to_decode     (ready_rename_to_decode),
-    .srcReg1_phys        (srcReg1_phys),
-    .srcReg2_phys        (srcReg2_phys),
-    .destReg_phys        (destReg_phys),
-    .oldDest_phys        (oldDest_phys),
-    .rob_tag             (rob_tag_rename),
-    // Packed outputs
-    .micro_op_o          (micro_op_rename),
-    .fu_o                (fu_rename_out),
-    .is_branch_o         (is_branch_rename_out),
-    .writes_rd_o         (writes_rd_rename_out),
-    .imm_o               (imm_rename_out),
-    .pc_o                (pc_rename_out),
-    .pred_hit_o          (pred_hit_rename_out),
-    .pred_taken_o        (pred_taken_rename_out),
-    .pred_target_o       (pred_target_rename_out)
+    .branch_miss_rename     (branch_mispredict),
+    .recover_tag_i          (mispredict_rob_tag),
+    // Dual retire signals from ROB commit
+    .retire_enable_0        (commit_valid && commit_writes_rd),
+    .retired_destReg_phys_0 (commit_dst_old),
+    .retire_enable_1        (1'b0),  // TODO: connect dual commit
+    .retired_destReg_phys_1 (7'b0),
+    // Dual-issue output to dispatch
+    .valid_to_dispatch      (valid_rename_to_dispatch),
+    .ready_to_decode        (ready_rename_to_decode),
+    .rename_pkt_o           (rename_pkt)
   );
 
   // ============================================================
